@@ -24,6 +24,11 @@ CREATE TABLE diagnostics (
   hw_version    text,
   sw_version    text,
   fw_version    text,
+  -- The device's OWN self-reported status, distinct from devices.status
+  -- (which is this service's derived reachability state). A device can
+  -- be perfectly reachable while reporting a fault about itself — those
+  -- are two different facts and are stored as two different columns.
+  device_reported_status text,
   checksum      text,   -- nullable while ChecksumProvider is stubbed (see docs/assumptions.md #3)
   recorded_at   timestamptz NOT NULL DEFAULT now()
 );

@@ -17,6 +17,10 @@ export interface Diagnostics {
   hwVersion: string;
   swVersion: string;
   fwVersion: string;
+  /** The device's own self-reported status, distinct from Device.status
+   *  (this service's derived reachability state). Nullable: not every
+   *  device is guaranteed to report one. */
+  deviceReportedStatus: string | null;
   checksum: string | null; // null while ChecksumProvider is stubbed
   recordedAt: Date;
 }
@@ -27,5 +31,6 @@ export interface HealthCheckResult {
     hwVersion: string;
     swVersion: string;
     fwVersion: string;
+    deviceReportedStatus: string | null;
   };
 }

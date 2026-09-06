@@ -58,7 +58,12 @@ function createRestDevice(profile) {
       hwVersion: profile.hwVersion,
       swVersion: profile.swVersion,
       fwVersion: profile.fwVersion,
-      status: "ok",
+      // The device's own view of itself, which is NOT the same as
+      // whether the monitoring service can reach it. `degraded` here
+      // means "I'm answering you, but something's wrong with me" —
+      // exactly the case that makes device-reported status worth
+      // storing separately from derived reachability.
+      status: profile.reportedStatus ?? "ok",
     });
   });
 

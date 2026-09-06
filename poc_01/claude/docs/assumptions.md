@@ -101,27 +101,30 @@ documentation — not a visual layer nobody explicitly asked for.
 ## 8. "Status" in "diagnostics data (HW, SW, FW version, status, checksum)"
 
 The brief lists "status" as one of five diagnostics fields to retrieve.
-This service captures HW/SW/FW version and checksum per diagnostics
-snapshot, but does **not** store a device-self-reported "status" string
-alongside them — only the monitoring service's own derived
-`reachable`/`suspect`/`down` state on the device row.
+There are two different things that could mean, and this service stores
+**both**, separately:
 
-**Interpretation:** the derived reachability state *is* "status" in the
-sense that matters for this PoC — it's what an operator actually needs
-("is this thing working"), and it's already exposed on every device via
-`GET /devices`. The mock devices' own `/diagnostics` endpoint does return
-a `status` field, but it's a static "ok" with no real signal behind it
-(these are simulators, not real firmware reporting real self-diagnostic
-state), so persisting it alongside real diagnostics would record a
-constant that adds no information.
+- `devices.status` — this service's own derived reachability state
+  (`reachable` / `suspect` / `down`), computed from health checks.
+- `diagnostics.device_reported_status` — what the device says about
+  *itself* in its diagnostics response.
 
-**Flagged honestly, not silently decided:** this interpretation was
-reached during implementation, not at design time — unlike the other
-entries in this document, it wasn't written down until an explicit
-requirements re-check surfaced it. If real hardware reports a
-meaningful self-diagnostic status distinct from reachability (e.g. "ok"
-vs "degraded — sensor fault" vs "ok — but overheating"), that's a real
-field this schema is currently missing, and the fix is small: add a
-`status` column to `diagnostics` and thread it through both
-`DeviceClient` implementations the same way `checksum` already flows
-from `ChecksumProvider`.
+**Why both, rather than collapsing them:** a device can be perfectly
+reachable while reporting a fault about itself ("I'm answering you, but
+my temperature sensor is failing"). Collapsing these into one field
+would lose exactly the information an operator most wants at a trade
+show, and there'd be no way to recover it afterwards from the stored
+data. The `switch-1` simulator is configured to demonstrate this: it is
+always reachable and always self-reports `degraded`.
+
+Devices that don't report a status yield `null` rather than a fabricated
+default, and the gRPC path normalizes proto3's empty-string default to
+`null` so both protocols store the same thing for "not reported."
+
+**Process note, kept deliberately:** an earlier revision of this
+document argued that derived reachability alone satisfied the
+requirement. That was wrong — it was an interpretation reached during
+implementation rather than a deliberate design decision, and a
+requirements re-read caught it. The column, the plumbing through both
+clients, and a test asserting the two fields are genuinely independent
+were added as a result.

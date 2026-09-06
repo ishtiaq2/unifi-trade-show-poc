@@ -46,7 +46,7 @@ npm test                  # everything
 npm run test:lifecycle     # just the life-cycle suite
 ```
 
-Three layers, deliberately not overlapping in what they cover:
+Four suites, 19 tests, deliberately not overlapping in what they cover:
 
 - **`test/stateMachine.test.ts`** — pure logic, no I/O. The single most
   important test file in this repo: it directly proves "unstable
@@ -55,6 +55,11 @@ Three layers, deliberately not overlapping in what they cover:
 - **`test/app.test.ts`** — HTTP + a real Postgres (not mocked), covering
   status codes and the "device registers even if unreachable at
   registration time" resilience path.
+- **`test/discovery.test.ts`** — capability discovery against a real
+  running device: that a device registered while unreachable recovers
+  its protocol on a later poll cycle, that the device's self-reported
+  status is captured independently of derived reachability, and that
+  checksums record as `null` rather than a fabricated value.
 - **`test/lifecycle.test.ts`** — boots the actual entrypoint
   (`src/index.ts`, unmodified) against a real Postgres and a real running
   device simulator, drives it through a real reachable→suspect→down
@@ -90,8 +95,11 @@ to down. Structured JSON log lines confirm the same transitions.
   interface is the actual deliverable here, not a working checksum.
 - **No auth on the API** — internal trade-show tool, not a public
   product (see `docs/non-goals.md`).
-- **Capability re-discovery** for devices stuck with `protocol: null`
-  (e.g. the flaky camera failing its very first health check at
-  registration) happens lazily on the next poll cycle — verified working
-  in the manual demo run, but there's no dedicated automated test for
-  this specific recovery path yet. Worth adding.
+- **Docker is unverified in the environment this was developed in** —
+  no Docker available there. The compose file and Dockerfiles follow
+  standard patterns and the compiled build (`npm run build && node
+  dist/index.js`) was verified to run correctly, but `docker compose up`
+  itself should be confirmed before relying on it at the venue.
+- **No historical status timeline** — `diagnostics` accumulates
+  snapshots, but there's no endpoint to query them over time. Easy
+  fast-follow; the schema already supports it.

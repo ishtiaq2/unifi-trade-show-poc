@@ -61,7 +61,7 @@ function createGrpcDevice(profile) {
         hwVersion: profile.hwVersion,
         swVersion: profile.swVersion,
         fwVersion: profile.fwVersion,
-        status: "ok",
+        status: profile.reportedStatus ?? "ok",
       });
     },
   });

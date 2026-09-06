@@ -33,8 +33,20 @@ export class RestDeviceClient implements DeviceClient {
         hwVersion: string;
         swVersion: string;
         fwVersion: string;
+        status?: string;
       };
-      return { ok: true, diagnostics: diag };
+      return {
+        ok: true,
+        diagnostics: {
+          hwVersion: diag.hwVersion,
+          swVersion: diag.swVersion,
+          fwVersion: diag.fwVersion,
+          // The device's own claim about itself. Optional on the wire:
+          // a device that doesn't report one yields null rather than
+          // this service inventing a value for it.
+          deviceReportedStatus: diag.status ?? null,
+        },
+      };
     } catch {
       // Network error, timeout, or abort — all treated as a failed check,
       // never an unhandled exception. The poller decides what a failure

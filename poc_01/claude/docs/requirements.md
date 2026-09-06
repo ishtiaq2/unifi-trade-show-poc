@@ -14,7 +14,7 @@ exercise has failed. **P1** = expected of competent, professional work.
 | # | Requirement | Priority | Note |
 |---|---|---|---|
 | 1 | Monitor a list of network devices — are they alive | P0 | The core loop |
-| 2 | Support REST for retrieving diagnostics (HW/SW/FW version, status, checksum) | P0 | Stated as required |
+| 2 | Support REST for retrieving diagnostics (HW/SW/FW version, status, checksum) | P0 | Stated as required. "status" resolved as TWO fields — derived reachability plus the device's own self-reported status; see `assumptions.md` #8 |
 | 3 | Support gRPC for devices that support it | P1 | Stated as "ideally" — read as a should, not a must |
 | 4 | Determine device capabilities/protocol via the device's own health endpoint | P0 | This is the mechanism that makes #2/#3 dynamic instead of hardcoded per device |
 | 5 | API to retrieve latest status of all monitored devices | P0 | The actual deliverable a demo would show |
@@ -26,7 +26,7 @@ exercise has failed. **P1** = expected of competent, professional work.
 | 11 | "Paired with the PoC life-cycle to get valid test results" | P0 (interpretation) | Ambiguous as written — see `assumptions.md` for the interpretation adopted and why |
 | 12 | Testing/running the whole thing must be easy, on a variety of unknown hardware/OS at the venue | P0 | Directly implies containerization — "quick and easy" on unknown OS is a portability requirement in disguise |
 | 13 | Implement the actual Node.js backend service | P0 | Stated as the deliverable |
-| 14 | Provide a short reply to the boss | P0 | Stated as a deliverable — see `reply-to-boss.md` (drafted after the technical scope is locked) |
+| 14 | Provide a short reply to the boss | P0 | Stated as a deliverable — see [`../REPLY_TO_BOSS.md`](../REPLY_TO_BOSS.md) |
 | 15 | Disclose where/how AI assistance was used | P0 | Grading criterion stated outside the boss-email narrative — goes in `AI_USAGE.md` |
 
 ## Implicit requirements ("between the lines")

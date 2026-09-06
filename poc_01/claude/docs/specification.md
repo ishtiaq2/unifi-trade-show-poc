@@ -94,9 +94,16 @@ device_id        uuid references devices(id)
 hw_version       text
 sw_version       text
 fw_version       text
+device_reported_status  text     -- the device's OWN claim about itself,
+                                 -- distinct from devices.status above
 checksum         text            -- from ChecksumProvider; nullable while stubbed
 recorded_at      timestamptz
 ```
+
+Note the two different "status" columns: `devices.status` is this
+service's derived reachability verdict, `diagnostics.device_reported_status`
+is what the device claims about itself. A device can be reachable while
+self-reporting a fault — see docs/assumptions.md #8.
 
 `diagnostics` is separate from `devices` rather than columns bolted onto
 the device row, since diagnostics are a point-in-time snapshot and the

@@ -90,19 +90,33 @@ export class DeviceRepository {
 
   async recordDiagnostics(
     deviceId: string,
-    diagnostics: { hwVersion: string; swVersion: string; fwVersion: string; checksum: string | null },
+    diagnostics: {
+      hwVersion: string;
+      swVersion: string;
+      fwVersion: string;
+      deviceReportedStatus: string | null;
+      checksum: string | null;
+    },
   ): Promise<void> {
     await this.pool.query(
-      `INSERT INTO diagnostics (device_id, hw_version, sw_version, fw_version, checksum)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [deviceId, diagnostics.hwVersion, diagnostics.swVersion, diagnostics.fwVersion, diagnostics.checksum],
+      `INSERT INTO diagnostics
+         (device_id, hw_version, sw_version, fw_version, device_reported_status, checksum)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        deviceId,
+        diagnostics.hwVersion,
+        diagnostics.swVersion,
+        diagnostics.fwVersion,
+        diagnostics.deviceReportedStatus,
+        diagnostics.checksum,
+      ],
     );
   }
 
   /** Latest diagnostics snapshot for a device, or null if none recorded yet. */
   async latestDiagnostics(deviceId: string): Promise<Diagnostics | null> {
     const { rows } = await this.pool.query(
-      `SELECT hw_version, sw_version, fw_version, checksum, recorded_at
+      `SELECT hw_version, sw_version, fw_version, device_reported_status, checksum, recorded_at
        FROM diagnostics WHERE device_id = $1
        ORDER BY recorded_at DESC LIMIT 1`,
       [deviceId],
@@ -113,6 +127,7 @@ export class DeviceRepository {
       hwVersion: r.hw_version,
       swVersion: r.sw_version,
       fwVersion: r.fw_version,
+      deviceReportedStatus: r.device_reported_status,
       checksum: r.checksum,
       recordedAt: r.recorded_at,
     };

@@ -1,12 +1,17 @@
 # Device Monitoring Service — Trade Show PoC
 
-**Status:** implementation complete. Device simulators, database schema,
-and the monitoring service itself are all built and verified — 16/16
-tests passing, including a full life-cycle test against real Postgres
-and a real running device simulator, plus a manual end-to-end demo run.
+**Status:** implementation complete. 19/19 tests passing, including a
+full life-cycle test that boots the real service against real Postgres
+and a real running device simulator, plus manual end-to-end demo runs
+across both REST and gRPC.
+
+**Reviewers start here:** [`REPLY_TO_BOSS.md`](REPLY_TO_BOSS.md) — the
+short reply, written as it would actually be sent.
 
 ## Start here
 
+- [`REPLY_TO_BOSS.md`](REPLY_TO_BOSS.md) — the reply to the boss
+- [`AI_USAGE.md`](AI_USAGE.md) — where and why AI assistance was used
 - [`docs/requirements.md`](docs/requirements.md) — what was asked for,
   explicit and implied, with priority
 - [`docs/assumptions.md`](docs/assumptions.md) — every ambiguous point in

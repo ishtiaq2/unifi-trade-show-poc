@@ -2,6 +2,11 @@ export interface DiagnosticsInput {
   hwVersion: string;
   swVersion: string;
   fwVersion: string;
+  /** Included because the brief specifies the checksum covers "the
+   *  diagnostics data", and status is one of the five listed diagnostics
+   *  fields — a checksum that silently omitted it would not actually
+   *  verify the payload it claims to. */
+  deviceReportedStatus: string | null;
 }
 
 export interface ChecksumProvider {

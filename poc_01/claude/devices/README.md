@@ -8,11 +8,16 @@ logic to keep in sync.
 | Folder | Protocol | Port | Behavior |
 |---|---|---|---|
 | `router` | REST | 4001 | always healthy |
-| `switch` | REST | 4002 | always healthy |
+| `switch` | REST | 4002 | reachable, but **self-reports `degraded`** |
 | `camera-rest` | REST | 4003 | **flaky** — ~35% failure rate, always recovers |
 | `door-access-rest` | REST | 4004 | healthy for 8 requests, then **permanently down** |
 | `camera-grpc` | gRPC | 4005 | always healthy |
 | `door-access-grpc` | gRPC | 4006 | always healthy |
+
+`switch` demonstrates a third, different case: a device that answers
+every request perfectly while reporting a fault about *itself*. This is
+why device-reported status is stored separately from derived
+reachability (docs/assumptions.md #8) — collapsing them would lose this.
 
 `camera-rest` and `door-access-rest` exist specifically to demo the two
 different failure behaviors the monitoring service needs to tell apart:

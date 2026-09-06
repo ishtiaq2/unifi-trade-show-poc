@@ -87,3 +87,30 @@ _(monitoring-service implementation entries to follow once that's built.)_
     watched a device transition `reachable → suspect → down` in real
     time with timing matching the configured threshold, confirmed via
     both the API and the structured log output.
+
+### Final iteration: requirements re-audit
+
+- Re-read the original brief line by line against the built service. This
+  caught a genuine requirements miss that no test would have found,
+  because the tests only asserted what had already been built: the brief
+  lists "status" as one of five diagnostics fields, and the service was
+  storing only its own derived reachability state, not the device's
+  self-reported status. Fixed properly — new column, threaded through
+  both DeviceClient implementations, ChecksumProvider input updated (the
+  checksum covers "the diagnostics data," so omitting a diagnostics
+  field from it would have been quietly wrong), plus a test asserting
+  the two statuses are genuinely independent.
+- The same audit caught two stale docs: `docker-compose.yml` and the
+  root README both described the device simulators as being run
+  separately from compose, contradicting the compose file itself.
+- Added `test/discovery.test.ts` covering two paths previously verified
+  only by hand: protocol re-discovery for a device registered while
+  unreachable, and null-checksum recording.
+- Verified the new behavior live across both protocols, not just via
+  tests: the `switch-1` simulator reports `reachable` +
+  `deviceReportedStatus: "degraded"` simultaneously through REST, and
+  the gRPC path returns `"ok"` — confirming both clients normalize
+  correctly (proto3's empty-string default is mapped to null so the two
+  protocols store the same thing for "not reported").
+- Wrote `REPLY_TO_BOSS.md` — a graded deliverable that was missing
+  entirely until this pass.

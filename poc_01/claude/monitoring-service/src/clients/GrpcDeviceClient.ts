@@ -67,6 +67,12 @@ export class GrpcDeviceClient implements DeviceClient {
                 hwVersion: diag.hwVersion,
                 swVersion: diag.swVersion,
                 fwVersion: diag.fwVersion,
+                // proto3 scalar fields default to "" rather than being
+                // absent, so an empty string here means "not reported"
+                // and is normalized to null — matching the REST client's
+                // behavior rather than storing "" in one path and null
+                // in the other.
+                deviceReportedStatus: diag.status || null,
               },
             });
           },
