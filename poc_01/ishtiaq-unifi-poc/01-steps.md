@@ -1,4 +1,13 @@
-cd poc/devices
+## Install NVM on VM and Node.js. The purpose is to create package-lock.json
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+source ~/.bashrc
+nvm i v22
+cd devices && npm i
+rm -rf node_modules
+
+
+# *************************** Actual Build ************************************** 
+## cd poc/devices
 
 ## create shared network
 * podman network create unifi-net
@@ -9,7 +18,7 @@ cd poc/devices
 ## Using the base image run different devices
 
 ### This will simulate device camera-rest. When run from docker-compose makes it easier:
-podman run -d --name camera-rest --network unifi-net -p 4003:4003 unifi-devices node camera-rest/index.js
+podman run -d --name camera-rest --network unifi-net -p 4003:4003 unifi-devices npx ts-node camera-rest/index.ts
 
 #### [admin@localhost devices]$ podman exec -it camera-rest ls -l /app 
 #### OR
@@ -22,11 +31,7 @@ podman run -d --name camera-rest --network unifi-net -p 4003:4003 unifi-devices 
 * -rw-r--r--.  1 root root 43909 Sep  6 13:32 package-lock.json
 * -rw-r--r--.  1 root root   474 Sep  6 13:32 package.json
 #### exit
-
-### This will simulate device router-rest. When run from docker-compose makes it easier:
-podman run -d --name router --network unifi-net -p 4001:4001 unifi-devices node router/index.js
-
-### health: 
+### health:
 [admin@localhost devices]$ curl -X GET "http://localhost:4003/health"
 {"protocol":"rest","capabilities":["diagnostics"],"deviceName":"camera-rest-1"}[admin@localhost devices]$
 
@@ -34,17 +39,21 @@ podman run -d --name router --network unifi-net -p 4001:4001 unifi-devices node 
 [admin@localhost devices]$ curl -X GET "http://localhost:4003/diagnostics"
 {"hwVersion":"CAM-HW-1.5","swVersion":"3.2.0","fwVersion":"FW-4.1.0","status":"ok"}[admin@localhost devices]$
 
-v
+
+# ******************* Repeat the above steps to run more devices ***********************************
+
+### This will simulate device router-rest. When run from docker-compose makes it easier:
+podman run -d --name router --network unifi-net -p 4001:4001 unifi-devices npx ts-node router/index.ts
 
 
 ### This will simulate device switch. When run from docker-compose makes it easier:
-podman run -d --name switch --network unifi-net -p 4002:4002 unifi-devices node switch/index.js
+podman run -d --name switch --network unifi-net -p 4002:4002 unifi-devices npx ts-node switch/index.ts
 
 ### This will simulate device door-access-rest. When run from docker-compose makes it easier:
-podman run -d --name door-access-rest --network unifi-net -p 4004:4004 unifi-devices node door-access-rest/index.js
+podman run -d --name door-access-rest --network unifi-net -p 4004:4004 unifi-devices npx ts-node door-access-rest/index.ts
 
 ### This will simulate device camera-rest-gprc. When run from docker-compose makes it easier:
-podman run -d --name camera-grpc --network unifi-net -p 4005:4005 unifi-devices node camera-grpc/index.js
+podman run -d --name camera-grpc --network unifi-net -p 4005:4005 unifi-devices npx ts-node camera-grpc/index.ts
 
 ## This will simulate device door-access-gprc. When run from docker-compose makes it easier:
-podman run -d --name door-access-grpc --network unifi-net -p 4006:4006 unifi-devices node door-access-grpc/index.js
+podman run -d --name door-access-grpc --network unifi-net -p 4006:4006 unifi-devices npx ts-node door-access-grpc/index.ts

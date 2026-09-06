@@ -4,7 +4,9 @@
   "description": "Shared mock device simulators (REST + gRPC) for the trade-show PoC",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"no automated tests for the simulators themselves — see monitoring-service/test\" && exit 0"
+    "test": "echo \"no automated tests for the simulators themselves — see monitoring-service/test\" && exit 0",
+    "start": "ts-node",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +15,11 @@
     "@grpc/grpc-js": "^1.14.4",
     "@grpc/proto-loader": "^0.8.1",
     "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
   }
 }

@@ -1,7 +1,9 @@
 // Intermittent, not broken: simulates a camera behind an unstable network
 // link. This is the device that should demonstrate reachable -> suspect
 // -> reachable, and never falsely settle on "down" (docs/assumptions.md #4).
-module.exports = {
+import { DeviceProfile } from "../_shared/rest-simulator";
+
+const profile: DeviceProfile = {
   name: "camera-rest-1",
   hwVersion: "CAM-HW-1.5",
   swVersion: "3.2.0",
@@ -10,3 +12,5 @@ module.exports = {
   failureRate: 0.35,
   port: 4003,
 };
+
+export default profile;

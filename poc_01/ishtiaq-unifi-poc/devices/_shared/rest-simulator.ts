@@ -26,13 +26,33 @@
  *                    fails on every request after that — simulates a
  *                    device that's actually, permanently down
  */
-const express = require("express");
+import express, { Application, Request, Response } from "express";
 
-function createRestDevice(profile) {
+// Define the exact shape and allowed values for a device profile
+export interface DeviceProfile {
+  name: string;
+  port: number;
+  hwVersion: string;
+  swVersion: string;
+  fwVersion: string;
+  failureMode?: "none" | "flaky" | "goes-down";
+  failureRate?: number;
+  healthyRequests?: number;
+  reportedStatus?: string;
+}
+
+/**
+ * Generic REST device simulator, driven entirely by a profile object.
+ *
+ * Endpoints:
+ *   GET /health       → capability discovery
+ *   GET /diagnostics  → HW/SW/FW version + status
+ */
+export function createRestDevice(profile: DeviceProfile): Application {
   const app = express();
   let requestCount = 0;
 
-  function shouldFail() {
+  function shouldFail(): boolean {
     requestCount += 1;
     if (profile.failureMode === "flaky") {
       return Math.random() < (profile.failureRate ?? 0.3);
@@ -43,8 +63,12 @@ function createRestDevice(profile) {
     return false;
   }
 
-  app.get("/health", (req, res) => {
-    if (shouldFail()) return res.status(503).json({ error: "unavailable" });
+  app.get("/health", (req: Request, res: Response): void => {
+    if (shouldFail()) {
+      res.status(503).json({ error: "unavailable" });
+      return;
+    }
+
     res.json({
       protocol: "rest",
       capabilities: ["diagnostics"],
@@ -52,22 +76,19 @@ function createRestDevice(profile) {
     });
   });
 
-  app.get("/diagnostics", (req, res) => {
-    if (shouldFail()) return res.status(503).json({ error: "unavailable" });
+  app.get("/diagnostics", (req: Request, res: Response): void => {
+    if (shouldFail()) {
+      res.status(503).json({ error: "unavailable" });
+      return;
+    }
+
     res.json({
       hwVersion: profile.hwVersion,
       swVersion: profile.swVersion,
       fwVersion: profile.fwVersion,
-      // The device's own view of itself, which is NOT the same as
-      // whether the monitoring service can reach it. `degraded` here
-      // means "I'm answering you, but something's wrong with me" —
-      // exactly the case that makes device-reported status worth
-      // storing separately from derived reachability.
       status: profile.reportedStatus ?? "ok",
     });
   });
 
   return app;
 }
-
-module.exports = { createRestDevice };

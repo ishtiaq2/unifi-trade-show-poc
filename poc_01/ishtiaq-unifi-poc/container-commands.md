@@ -1,0 +1,11 @@
+## These are the commands used frequently during container setup
+
+* podman stop camera-rest
+
+* podman rm camera-rest
+
+* podman rmi unifi-devices
+
+* podman image prune -a
+
+* podman logs camera-rest
