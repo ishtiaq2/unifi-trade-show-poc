@@ -42,3 +42,48 @@ afterward.
   by running real inserts, not assumed from reading the SQL.
 
 _(monitoring-service implementation entries to follow once that's built.)_
+
+### monitoring-service implementation
+
+- Used AI assistance to generate the initial implementation of each
+  module (state machine, DeviceClient implementations, repository,
+  poller, HTTP layer) against the architecture already fixed in
+  `docs/specification.md` — the module boundaries and interfaces were
+  decided before any code was generated, not discovered by the AI.
+- Reviewed and changed AI-suggested output in several concrete places:
+  - The default logger initially used plain `console.log(msg, meta)`,
+    which prints Node's `util.inspect` format, not JSON — caught because
+    the life-cycle test needed to parse real log output and the format
+    didn't match what `specification.md` called for ("structured (JSON)
+    logging"). Changed to explicit `JSON.stringify`.
+  - The build configuration initially reused the same `tsconfig.json` for
+    both typecheck and production build, which put compiled output under
+    `dist/src/...` instead of `dist/...` — wrong for a Docker `CMD
+    ["node", "dist/index.js"]`. Caught by actually running the compiled
+    output, not by reading the config. Fixed with a dedicated
+    `tsconfig.build.json`.
+  - The build also didn't copy `device.proto` into `dist/`, since `tsc`
+    only compiles `.ts` files — caught the same way, by running
+    `node dist/index.js` and hitting a real `ENOENT`. Fixed by adding an
+    explicit copy step to the `build` script itself, not just the
+    Dockerfile, so the bug can't resurface for anyone running `npm run
+    build` outside Docker.
+- Verified everything by actually running it, not by reading the code:
+  - All 16 tests pass, including a life-cycle test that boots the real
+    entrypoint against real Postgres and a real device simulator.
+  - Caught a genuinely flaky test this way: the life-cycle test's
+    original method of watching for the `suspect` state (polling the API
+    on a timer) could race past the transition under load. This wasn't a
+    state-machine bug — the isolated unit tests already proved the state
+    machine can't skip `suspect` — it was a flaw in how the test
+    observed the system. Fixed by asserting against the poller's own
+    structured transition logs instead of a polling race. Full reasoning
+    in `monitoring-service/README.md` and inline in the test file.
+  - Ran a full manual demo: started Postgres, all 6 real device
+    simulators, and the real service; registered all 6 devices through
+    the actual `POST /devices` endpoint (one hit the "register succeeds
+    even if discovery fails" resilience path for real, unprompted, when
+    the flaky camera happened to fail its first health check); then
+    watched a device transition `reachable → suspect → down` in real
+    time with timing matching the configured threshold, confirmed via
+    both the API and the structured log output.

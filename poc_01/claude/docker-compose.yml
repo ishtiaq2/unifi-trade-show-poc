@@ -27,6 +27,17 @@ services:
       timeout: 3s
       retries: 5
 
+  monitoring-service:
+    build: ./monitoring-service
+    environment:
+      DATABASE_URL: postgres://poc:poc@db:5432/poc
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
   router:
     build: ./devices
     command: node router/index.js

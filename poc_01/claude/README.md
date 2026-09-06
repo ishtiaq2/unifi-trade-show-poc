@@ -1,7 +1,9 @@
 # Device Monitoring Service — Trade Show PoC
 
-**Status:** device simulators and database schema are built and verified.
-`monitoring-service/` (the actual graded deliverable) is next.
+**Status:** implementation complete. Device simulators, database schema,
+and the monitoring service itself are all built and verified — 16/16
+tests passing, including a full life-cycle test against real Postgres
+and a real running device simulator, plus a manual end-to-end demo run.
 
 ## Start here
 
@@ -15,29 +17,49 @@
   out, and why
 - [`devices/README.md`](devices/README.md) — the 6 mock device
   simulators standing in for real trade-show hardware
+- [`monitoring-service/README.md`](monitoring-service/README.md) — the
+  service itself: architecture, testing strategy, and a real flaky test
+  that got fixed, not hidden
 
 ## Layout
 
 ```
 db/                 — Postgres schema (verified against a real Postgres 16 instance)
 devices/            — 6 mock device simulators (REST + gRPC), see devices/README.md
-monitoring-service/ — the Node.js backend service (not yet built)
-docker-compose.yml  — brings up Postgres + all 6 devices together
+monitoring-service/ — the Node.js backend (implemented, tested, verified live)
+docker-compose.yml  — brings up Postgres + monitoring-service together
 ```
 
-## Running what exists so far
+## Running the whole thing
 
 ```bash
 # Database
-psql -f db/init.sql   # or: docker compose up db
+docker compose up db -d
+# or locally: createdb poc && psql -d poc -f db/init.sql
 
-# Any device simulator
+# Monitoring service
+cd monitoring-service && npm install
+export DATABASE_URL=postgres://poc:poc@localhost:5432/poc
+npm run dev
+
+# Device simulators, each in its own terminal (or see devices/README.md)
 cd devices && npm install
-node router/index.js               # REST
-node camera-grpc/index.js          # gRPC
+node router/index.js
+node camera-grpc/index.js
+# ...etc
+
+# Register the devices via the real API
+cd monitoring-service && npm run seed
+
+curl http://localhost:3000/devices
 ```
+
+`docker compose up` builds and runs Postgres + the monitoring service
+together; the 6 device simulators are still run individually per
+`devices/README.md` (they represent physical hardware present at the
+venue, not something the service's own compose file should own).
 
 ## AI usage
 
-See [`AI_USAGE.md`](AI_USAGE.md) — updated as implementation proceeds,
+See [`AI_USAGE.md`](AI_USAGE.md) — updated as implementation proceeded,
 not written retroactively.
