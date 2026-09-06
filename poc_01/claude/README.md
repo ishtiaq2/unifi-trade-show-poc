@@ -33,6 +33,12 @@ docker-compose.yml  — brings up Postgres + monitoring-service together
 ## Running the whole thing
 
 ```bash
+docker compose up   # brings up Postgres + monitoring-service + all 6 device simulators together
+```
+
+Or run each piece individually:
+
+```bash
 # Database
 docker compose up db -d
 # or locally: createdb poc && psql -d poc -f db/init.sql
@@ -53,11 +59,6 @@ cd monitoring-service && npm run seed
 
 curl http://localhost:3000/devices
 ```
-
-`docker compose up` builds and runs Postgres + the monitoring service
-together; the 6 device simulators are still run individually per
-`devices/README.md` (they represent physical hardware present at the
-venue, not something the service's own compose file should own).
 
 ## AI usage
 

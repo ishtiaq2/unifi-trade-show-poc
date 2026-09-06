@@ -97,3 +97,31 @@ Covered in `requirements.md` #17 — logged here too because it's the
 assumption most likely to be second-guessed. The call: professionalism
 here means solid API design, structured errors, good logs, and
 documentation — not a visual layer nobody explicitly asked for.
+
+## 8. "Status" in "diagnostics data (HW, SW, FW version, status, checksum)"
+
+The brief lists "status" as one of five diagnostics fields to retrieve.
+This service captures HW/SW/FW version and checksum per diagnostics
+snapshot, but does **not** store a device-self-reported "status" string
+alongside them — only the monitoring service's own derived
+`reachable`/`suspect`/`down` state on the device row.
+
+**Interpretation:** the derived reachability state *is* "status" in the
+sense that matters for this PoC — it's what an operator actually needs
+("is this thing working"), and it's already exposed on every device via
+`GET /devices`. The mock devices' own `/diagnostics` endpoint does return
+a `status` field, but it's a static "ok" with no real signal behind it
+(these are simulators, not real firmware reporting real self-diagnostic
+state), so persisting it alongside real diagnostics would record a
+constant that adds no information.
+
+**Flagged honestly, not silently decided:** this interpretation was
+reached during implementation, not at design time — unlike the other
+entries in this document, it wasn't written down until an explicit
+requirements re-check surfaced it. If real hardware reports a
+meaningful self-diagnostic status distinct from reachability (e.g. "ok"
+vs "degraded — sensor fault" vs "ok — but overheating"), that's a real
+field this schema is currently missing, and the fix is small: add a
+`status` column to `diagnostics` and thread it through both
+`DeviceClient` implementations the same way `checksum` already flows
+from `ChecksumProvider`.

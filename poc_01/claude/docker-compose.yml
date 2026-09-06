@@ -1,14 +1,9 @@
 version: "3.8"
 
-# Brings up Postgres (seeded with the schema) and all 6 mock device
-# simulators, so the monitoring-service (once built) has something real
-# to point at immediately — directly answers the brief's "must be able to
-# get it up and running quick and easy" on unfamiliar trade-show hardware.
-#
-# monitoring-service itself is deliberately not in this file yet — it
-# doesn't exist yet (design phase only, see docs/). It'll be added here
-# once implemented, as its own service depending on `db` and reachable at
-# a fixed port the devices below don't collide with.
+# Brings up Postgres, the monitoring service, and all 6 mock device
+# simulators — one command gets the whole demo running, directly
+# answering "must be able to get it up and running quick and easy" on
+# unfamiliar trade-show hardware.
 
 services:
   db:
