@@ -8,7 +8,7 @@ import { resolvePort, type DeviceProfile } from "./types";
  */
 export function startRestDevice(profile: DeviceProfile): void {
   const app = createRestDevice(profile);
-  // Forces Express to pretty-print JSON and append a newline
+  // Pretty-prints JSON responses for readable curl/browser output during demos.
   app.set("json spaces", 2);
   const port = resolvePort(profile);
   const server = app.listen(port, () => {
