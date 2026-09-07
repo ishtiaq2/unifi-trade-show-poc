@@ -1,16 +1,22 @@
-// Intermittent, not broken: simulates a camera behind an unstable network
-// link. This is the device that should demonstrate reachable -> suspect
-// -> reachable, and never falsely settle on "down" (docs/assumptions.md #4).
-import { DeviceProfile } from "../_shared/rest-simulator";
+// Intermittent, not broken: simulates a camera behind an unstable
+// network link. Demonstrates reachable -> suspect -> reachable, and must
+// NOT falsely settle on "down" (docs/assumptions.md #4).
+//
+// failureRate is 0.15, not the more intuitive 0.35, because the rate
+// compounds: the monitoring service calls /health AND /diagnostics per
+// check, each rolling independently, so the effective check-failure
+// probability is 1 - (1 - rate)^2. Simulation at 0.35 produced ~5 false
+// "down" transitions over a two-hour demo; at 0.15 false alarms are
+// effectively impossible while "suspect" blips stay visible.
+import type { DeviceProfile } from "../_shared/types";
 
-const profile: DeviceProfile = {
-  name: "camera-rest-1",
+const camera: DeviceProfile = {
+  name: "camera-rest-1-ts",
   hwVersion: "CAM-HW-1.5",
   swVersion: "3.2.0",
   fwVersion: "FW-4.1.0",
   failureMode: "flaky",
-  failureRate: 0.35,
+  failureRate: 0.15,
   port: 4003,
 };
-
-export default profile;
+export default camera;

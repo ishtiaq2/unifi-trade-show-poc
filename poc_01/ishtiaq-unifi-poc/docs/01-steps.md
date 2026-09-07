@@ -15,6 +15,7 @@ rm -rf node_modules
 ## Build the base image using the Dockerfile
 * cd devices
 * podman build -t unifi-devices .
+* Check image: podman images
 
 ## Using the base image run different devices
 
@@ -39,6 +40,13 @@ podman run -d --name camera-rest --network unifi-net -p 4003:4003 unifi-devices 
 ### diagnostics:
 [admin@localhost devices]$ curl -X GET "http://localhost:4003/diagnostics"
 {"hwVersion":"CAM-HW-1.5","swVersion":"3.2.0","fwVersion":"FW-4.1.0","status":"ok"}[admin@localhost devices]$
+
+### Troubleshoot: 
+- curl -X GET http://192.168.1.137:4003/health
+- curl: (7) Failed to connect to 192.168.1.137 port 4003 after 0 ms: No route to host
+#### Fix: 
+- sudo firewall-cmd --add-port=4003/tcp --permanent
+- sudo firewall-cmd --reload
 
 
 # ******************* Repeat the above steps to run more devices ***********************************
