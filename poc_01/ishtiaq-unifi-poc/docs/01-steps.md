@@ -14,7 +14,7 @@ rm -rf node_modules
 
 ## Build the base image using the Dockerfile
 * cd devices
-* podman build -t unifi-devices .
+* podman build --no-cache -t unifi-devices .
 * Check image: podman images
 
 ## Using the base image run different devices

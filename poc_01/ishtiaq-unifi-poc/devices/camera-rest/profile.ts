@@ -11,7 +11,7 @@
 import type { DeviceProfile } from "../_shared/types";
 
 const camera: DeviceProfile = {
-  name: "camera-rest-1-ts",
+  name: "camera-rest-1-ts-AA",
   hwVersion: "CAM-HW-1.5",
   swVersion: "3.2.0",
   fwVersion: "FW-4.1.0",
