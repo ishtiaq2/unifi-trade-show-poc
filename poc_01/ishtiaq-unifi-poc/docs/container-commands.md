@@ -8,4 +8,5 @@
 
 * podman image prune -a
 
+### Debugging + trouble shooting
 * podman logs camera-rest

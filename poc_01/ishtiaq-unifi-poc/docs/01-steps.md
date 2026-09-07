@@ -13,6 +13,7 @@ rm -rf node_modules
 * podman network create unifi-net
 
 ## Build the base image using the Dockerfile
+* cd devices
 * podman build -t unifi-devices .
 
 ## Using the base image run different devices
