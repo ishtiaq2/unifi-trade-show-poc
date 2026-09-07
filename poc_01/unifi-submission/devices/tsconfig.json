@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // These simulators run through ts-node, never as compiled output, so
+    // `tsc` is used ONLY for typechecking. noEmit is deliberate: an
+    // earlier config emitted .js files next to their .ts sources, which
+    // meant `node camera-rest/index.js` would silently run a stale
+    // compiled copy after any source edit — no error, just wrong
+    // behavior. Refusing to emit removes that trap entirely.
+    "noEmit": true
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  },
+  "include": ["_shared", "router", "switch", "camera-rest", "door-access-rest", "camera-grpc", "door-access-grpc"]
+}
