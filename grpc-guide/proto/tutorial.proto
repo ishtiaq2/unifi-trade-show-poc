@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package tutorial;
+
+// One service, four methods — one per gRPC call shape. This is the
+// entire vocabulary of gRPC: everything else (auth, deadlines,
+// interceptors) layers on top of these four patterns.
+service TutorialService {
+
+  // UNARY — one request, one response. This is what REST does too;
+  // it's gRPC's default and most common shape.
+  rpc SayHello (HelloRequest) returns (HelloResponse);
+
+  // SERVER STREAMING — one request, a stream of responses. The client
+  // sends once; the server can keep pushing results over time on the
+  // same connection.
+  rpc CountToN (CountRequest) returns (stream CountUpdate);
+
+  // CLIENT STREAMING — a stream of requests, one response. The client
+  // keeps sending; the server processes everything and replies once,
+  // when the client signals it's done.
+  rpc UploadNumbers (stream NumberChunk) returns (UploadSummary);
+
+  // BIDIRECTIONAL STREAMING — both sides stream, independently. Either
+  // side can send at any time; this is the shape a chat app or a live
+  // collaborative editor uses.
+  rpc Chat (stream ChatMessage) returns (stream ChatMessage);
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloResponse {
+  string greeting = 1;
+}
+
+message CountRequest {
+  int32 upTo = 1;
+}
+
+message CountUpdate {
+  int32 value = 1;
+}
+
+message NumberChunk {
+  int32 value = 1;
+}
+
+message UploadSummary {
+  int32 count = 1;
+  int32 sum = 2;
+}
+
+message ChatMessage {
+  string sender = 1;
+  string text = 2;
+}
