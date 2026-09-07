@@ -1,0 +1,30 @@
+{
+  "name": "poc-device-simulators",
+  "version": "1.0.0",
+  "description": "Shared mock device simulators (REST + gRPC) for the trade-show PoC",
+  "scripts": {
+    "router": "ts-node router/index.ts",
+    "switch": "ts-node switch/index.ts",
+    "camera-rest": "ts-node camera-rest/index.ts",
+    "door-access-rest": "ts-node door-access-rest/index.ts",
+    "camera-grpc": "ts-node camera-grpc/index.ts",
+    "door-access-grpc": "ts-node door-access-grpc/index.ts",
+    "grpc-client": "ts-node _shared/test-grpc-client.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"Simulators are test fixtures; the graded suites live in monitoring-service/test\" && exit 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.4",
+    "@grpc/proto-loader": "^0.8.1",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

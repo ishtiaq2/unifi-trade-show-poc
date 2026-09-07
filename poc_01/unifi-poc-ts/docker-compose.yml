@@ -1,0 +1,74 @@
+# One command brings up the entire PoC: database, monitoring service, and
+# all six simulated devices.
+#
+#   docker compose up
+#
+# This is the direct answer to the brief's "must be able to get it up and
+# running quick and easy" on an unknown host OS at the venue.
+#
+# Works unchanged with podman-compose.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: poc
+      POSTGRES_USER: poc
+      POSTGRES_PASSWORD: poc
+    ports:
+      - "5432:5432"
+    volumes:
+      # Applied automatically on first start of an empty data directory.
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U poc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  monitoring-service:
+    build: ./monitoring-service
+    environment:
+      # Service name, not localhost: inside the compose network each
+      # container reaches the others by service name.
+      DATABASE_URL: postgres://poc:poc@db:5432/poc
+      PORT: "3000"
+      POLL_INTERVAL_MS: "5000"
+      FAILURE_THRESHOLD: "3"
+    ports:
+      - "3000:3000"
+    depends_on:
+      # Waits for the healthcheck, not just container start — otherwise
+      # the service's fail-fast startup would race Postgres initialising.
+      db:
+        condition: service_healthy
+
+  router:
+    build: ./devices
+    command: npm run router
+    ports: ["4001:4001"]
+
+  switch:
+    build: ./devices
+    command: npm run switch
+    ports: ["4002:4002"]
+
+  camera-rest:
+    build: ./devices
+    command: npm run camera-rest
+    ports: ["4003:4003"]
+
+  door-access-rest:
+    build: ./devices
+    command: npm run door-access-rest
+    ports: ["4004:4004"]
+
+  camera-grpc:
+    build: ./devices
+    command: npm run camera-grpc
+    ports: ["4005:4005"]
+
+  door-access-grpc:
+    build: ./devices
+    command: npm run door-access-grpc
+    ports: ["4006:4006"]
