@@ -1,0 +1,61 @@
+<svg viewBox="0 0 1180 1014" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+<rect width="1180" height="1014" fill="white"/>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2b6cb0"/></marker><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#718096"/></marker></defs>
+<text x="590.0" y="30" text-anchor="middle" font-size="18" font-weight="bold">Device Registration + Capability Discovery  (POST /devices)</text>
+<rect x="40.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="110.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Client</text>
+<line x1="110.0" y1="75" x2="110.0" y2="974" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="200.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="270.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">HTTP</text>
+<line x1="270.0" y1="75" x2="270.0" y2="974" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="360.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="430.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Service</text>
+<line x1="430.0" y1="75" x2="430.0" y2="974" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="520.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="590.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Repository</text>
+<line x1="590.0" y1="75" x2="590.0" y2="974" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="680.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="750.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">DeviceClient</text>
+<line x1="750.0" y1="75" x2="750.0" y2="974" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="840.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="910.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Device</text>
+<line x1="910.0" y1="75" x2="910.0" y2="974" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="1000.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="1070.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Postgres</text>
+<line x1="1070.0" y1="75" x2="1070.0" y2="974" stroke="#cbd5e0" stroke-width="1.5"/>
+<line x1="110.0" y1="110" x2="270.0" y2="110" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="190.0" y="104" text-anchor="middle" font-size="11.5" fill="#1a202c">POST /devices  { name, address }</text>
+<line x1="270.0" y1="162" x2="430.0" y2="162" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="350.0" y="156" text-anchor="middle" font-size="11.5" fill="#1a202c">registerDevice(name, address)</text>
+<line x1="430.0" y1="214" x2="590.0" y2="214" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="510.0" y="208" text-anchor="middle" font-size="11.5" fill="#1a202c">findByAddress(address)</text>
+<line x1="590.0" y1="266" x2="1070.0" y2="266" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="830.0" y="260" text-anchor="middle" font-size="11.5" fill="#1a202c">SELECT ... WHERE address = $1</text>
+<line x1="1070.0" y1="318" x2="590.0" y2="318" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="830.0" y="312" text-anchor="middle" font-size="11.5" fill="#4a5568">no existing row</text>
+<rect x="330.0" y="354" width="200" height="24" fill="#fefcbf" stroke="#d69e2e" rx="3"/>
+<text x="430.0" y="370" text-anchor="middle" font-size="11" font-style="italic">not a duplicate — proceed</text>
+<line x1="430.0" y1="404" x2="590.0" y2="404" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="510.0" y="398" text-anchor="middle" font-size="11.5" fill="#1a202c">createDevice(name, address)</text>
+<line x1="590.0" y1="456" x2="1070.0" y2="456" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="830.0" y="450" text-anchor="middle" font-size="11.5" fill="#1a202c">INSERT INTO devices ...</text>
+<line x1="1070.0" y1="508" x2="590.0" y2="508" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="830.0" y="502" text-anchor="middle" font-size="11.5" fill="#4a5568">new device row</text>
+<line x1="430.0" y1="560" x2="750.0" y2="560" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="590.0" y="554" text-anchor="middle" font-size="11.5" fill="#1a202c">discoverProtocol(address)</text>
+<line x1="750.0" y1="612" x2="910.0" y2="612" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="830.0" y="606" text-anchor="middle" font-size="11.5" fill="#1a202c">GET /health   (try REST first)</text>
+<rect x="818.0" y="648" width="184" height="38" fill="#fefcbf" stroke="#d69e2e" rx="3"/>
+<text x="910.0" y="664" text-anchor="middle" font-size="11" font-style="italic">responds with its own</text>
+<text x="910.0" y="678" text-anchor="middle" font-size="11" font-style="italic">capabilities + protocol</text>
+<line x1="910.0" y1="712" x2="750.0" y2="712" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="830.0" y="706" text-anchor="middle" font-size="11.5" fill="#4a5568">200  { protocol, capabilities }</text>
+<line x1="430.0" y1="764" x2="590.0" y2="764" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="510.0" y="758" text-anchor="middle" font-size="11.5" fill="#1a202c">setCapabilities(id, protocol, caps)</text>
+<line x1="590.0" y1="816" x2="1070.0" y2="816" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="830.0" y="810" text-anchor="middle" font-size="11.5" fill="#1a202c">UPDATE devices SET protocol = ...</text>
+<line x1="430.0" y1="868" x2="270.0" y2="868" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="350.0" y="862" text-anchor="middle" font-size="11.5" fill="#4a5568">device (with protocol resolved)</text>
+<line x1="270.0" y1="920" x2="110.0" y2="920" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="190.0" y="914" text-anchor="middle" font-size="11.5" fill="#4a5568">201 Created</text>
+</svg>

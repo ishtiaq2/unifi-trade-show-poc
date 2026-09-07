@@ -1,0 +1,67 @@
+<svg viewBox="0 0 1280 1118" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+<rect width="1280" height="1118" fill="white"/>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2b6cb0"/></marker><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#718096"/></marker></defs>
+<text x="640.0" y="30" text-anchor="middle" font-size="18" font-weight="bold">Poll Cycle — Retry, Backoff, State Transition  (one device, one tick)</text>
+<rect x="40.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="110.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Poller</text>
+<line x1="110.0" y1="75" x2="110.0" y2="1078" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="216.66666666666663" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="286.66666666666663" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Repository</text>
+<line x1="286.66666666666663" y1="75" x2="286.66666666666663" y2="1078" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="393.3333333333333" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="463.3333333333333" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">DeviceClient</text>
+<line x1="463.3333333333333" y1="75" x2="463.3333333333333" y2="1078" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="570.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="640.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Device</text>
+<line x1="640.0" y1="75" x2="640.0" y2="1078" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="746.6666666666666" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="816.6666666666666" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">StateMachine</text>
+<line x1="816.6666666666666" y1="75" x2="816.6666666666666" y2="1078" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="923.3333333333333" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="993.3333333333333" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Postgres</text>
+<line x1="993.3333333333333" y1="75" x2="993.3333333333333" y2="1078" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="1100.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="1170.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Logger</text>
+<line x1="1170.0" y1="75" x2="1170.0" y2="1078" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="30.0" y="94" width="160" height="38" fill="#fefcbf" stroke="#d69e2e" rx="3"/>
+<text x="110.0" y="110" text-anchor="middle" font-size="11" font-style="italic">timer fires every</text>
+<text x="110.0" y="124" text-anchor="middle" font-size="11" font-style="italic">POLL_INTERVAL_MS</text>
+<line x1="110.0" y1="158" x2="286.66666666666663" y2="158" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="198.33333333333331" y="152" text-anchor="middle" font-size="11.5" fill="#1a202c">listDevices()</text>
+<line x1="286.66666666666663" y1="210" x2="993.3333333333333" y2="210" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="640.0" y="204" text-anchor="middle" font-size="11.5" fill="#1a202c">SELECT * FROM devices</text>
+<line x1="993.3333333333333" y1="262" x2="286.66666666666663" y2="262" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="640.0" y="256" text-anchor="middle" font-size="11.5" fill="#4a5568">device rows</text>
+<line x1="110.0" y1="314" x2="463.3333333333333" y2="314" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="286.66666666666663" y="308" text-anchor="middle" font-size="11.5" fill="#1a202c">checkHealth(address)   attempt 1</text>
+<line x1="463.3333333333333" y1="366" x2="640.0" y2="366" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="551.6666666666666" y="360" text-anchor="middle" font-size="11.5" fill="#1a202c">GET /health, GET /diagnostics</text>
+<line x1="640.0" y1="418" x2="463.3333333333333" y2="418" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="551.6666666666666" y="412" text-anchor="middle" font-size="11.5" fill="#4a5568">503  (unstable network)</text>
+<line x1="110.0" y1="470" x2="110.0" y2="470" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<path d="M 110.0,470 C 180.0,468 180.0,488 110.0,488" fill="none" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="188.0" y="474" text-anchor="start" font-size="11.5" fill="#1a202c">backoffDelayMs(attempt) — wait, jittered</text>
+<line x1="110.0" y1="532" x2="463.3333333333333" y2="532" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="286.66666666666663" y="526" text-anchor="middle" font-size="11.5" fill="#1a202c">checkHealth(address)   attempt 2</text>
+<line x1="463.3333333333333" y1="584" x2="640.0" y2="584" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="551.6666666666666" y="578" text-anchor="middle" font-size="11.5" fill="#1a202c">GET /health, GET /diagnostics</text>
+<line x1="640.0" y1="636" x2="463.3333333333333" y2="636" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="551.6666666666666" y="630" text-anchor="middle" font-size="11.5" fill="#4a5568">200 OK  { diagnostics }</text>
+<line x1="110.0" y1="688" x2="816.6666666666666" y2="688" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="463.3333333333333" y="682" text-anchor="middle" font-size="11.5" fill="#1a202c">transition(current, succeeded=true)</text>
+<line x1="816.6666666666666" y1="740" x2="110.0" y2="740" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="463.3333333333333" y="734" text-anchor="middle" font-size="11.5" fill="#4a5568">{ status: reachable, consecutiveFailures: 0 }</text>
+<line x1="110.0" y1="792" x2="286.66666666666663" y2="792" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="198.33333333333331" y="786" text-anchor="middle" font-size="11.5" fill="#1a202c">updateStatus(id, reachable, 0)</text>
+<line x1="286.66666666666663" y1="844" x2="993.3333333333333" y2="844" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="640.0" y="838" text-anchor="middle" font-size="11.5" fill="#1a202c">UPDATE devices SET status = ...</text>
+<line x1="110.0" y1="896" x2="286.66666666666663" y2="896" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="198.33333333333331" y="890" text-anchor="middle" font-size="11.5" fill="#1a202c">recordDiagnostics(id, payload)</text>
+<line x1="286.66666666666663" y1="948" x2="993.3333333333333" y2="948" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="640.0" y="942" text-anchor="middle" font-size="11.5" fill="#1a202c">INSERT INTO diagnostics ...</text>
+<rect x="-30.0" y="984" width="280" height="38" fill="#fefcbf" stroke="#d69e2e" rx="3"/>
+<text x="110.0" y="1000" text-anchor="middle" font-size="11" font-style="italic">status changed from previous cycle?</text>
+<text x="110.0" y="1014" text-anchor="middle" font-size="11" font-style="italic">log the transition, not every check</text>
+<line x1="110.0" y1="1048" x2="1170.0" y2="1048" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="640.0" y="1042" text-anchor="middle" font-size="11.5" fill="#1a202c">info({ from, to: reachable })</text>
+</svg>

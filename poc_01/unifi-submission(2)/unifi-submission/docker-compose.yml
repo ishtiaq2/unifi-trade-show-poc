@@ -1,0 +1,73 @@
+# One command brings up the entire PoC: database, monitoring service,
+# and all six simulated devices.
+#
+#   docker compose up
+#
+# This is the direct answer to the brief's "must be able to get it up
+# and running quick and easy" on an unknown host OS at the venue.
+# Works unchanged with podman-compose.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: poc
+      POSTGRES_USER: poc
+      POSTGRES_PASSWORD: poc
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U poc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  monitoring-service:
+    build: ./monitoring-service
+    environment:
+      DATABASE_URL: postgres://poc:poc@db:5432/poc
+      PORT: "3000"
+      POLL_INTERVAL_MS: "5000"
+      FAILURE_THRESHOLD: "3"
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Six device simulators, one shared image (see devices/Dockerfile and
+  # devices/docker-compose.yml, which this mirrors for the combined
+  # stack). Only `router` carries a `build:` — the rest reuse the same
+  # `image:` tag, so the image is built once, not six times.
+  router:
+    build: ./devices
+    image: unifi-devices
+    command: npm run router
+    ports: ["4001:4001"]
+
+  switch:
+    image: unifi-devices
+    command: npm run switch
+    ports: ["4002:4002"]
+
+  camera-rest:
+    image: unifi-devices
+    command: npm run camera-rest
+    ports: ["4003:4003"]
+
+  door-access-rest:
+    image: unifi-devices
+    command: npm run door-access-rest
+    ports: ["4004:4004"]
+
+  camera-grpc:
+    image: unifi-devices
+    command: npm run camera-grpc
+    ports: ["4005:4005"]
+
+  door-access-grpc:
+    image: unifi-devices
+    command: npm run door-access-grpc
+    ports: ["4006:4006"]

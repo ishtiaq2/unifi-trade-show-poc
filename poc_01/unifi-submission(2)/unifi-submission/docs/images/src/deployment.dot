@@ -1,0 +1,35 @@
+digraph deployment {
+  rankdir=TB;
+  bgcolor="white";
+  fontname="Helvetica";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled"];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  subgraph cluster_compose {
+    label="docker-compose.yml  /  podman-compose.yml  —  one shared network";
+    fontname="Helvetica-Bold";
+    style="rounded"; color="#2b6cb0"; penwidth=2;
+
+    db [label="db\npostgres:16\n:5432", shape=cylinder, fillcolor="#e2e8f0"];
+    svc [label="monitoring-service\nbuild: ./monitoring-service\n:3000", fillcolor="#bee3f8"];
+
+    subgraph cluster_devices {
+      label="unifi-devices image (built once, shared image: tag)";
+      fontname="Helvetica";
+      style=dashed; color="#999999";
+      router [label="router\n:4001", fillcolor="#eeeeee"];
+      switch [label="switch\n:4002", fillcolor="#eeeeee"];
+      camera_rest [label="camera-rest\n:4003", fillcolor="#eeeeee"];
+      door_rest [label="door-access-rest\n:4004", fillcolor="#eeeeee"];
+      camera_grpc [label="camera-grpc\n:4005", fillcolor="#eeeeee"];
+      door_grpc [label="door-access-grpc\n:4006", fillcolor="#eeeeee"];
+    }
+  }
+
+  host [label="Host machine\n(unknown OS at the venue)", shape=box3d, fillcolor="#fefcbf"];
+
+  svc -> db [label="  DATABASE_URL"];
+  svc -> router [style=invis];
+  host -> svc [label="  :3000 published"];
+  host -> router [label="  :4001-4006 published", lhead=cluster_devices];
+}

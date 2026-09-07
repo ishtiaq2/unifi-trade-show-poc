@@ -1,0 +1,59 @@
+digraph architecture {
+  rankdir=TB;
+  bgcolor="white";
+  fontname="Helvetica";
+  node [fontname="Helvetica", fontsize=12, shape=box, style="rounded,filled", margin="0.25,0.15"];
+  edge [fontname="Helvetica", fontsize=10, color="#555555"];
+
+  subgraph cluster_client {
+    label="Clients";
+    fontname="Helvetica-Bold";
+    style=dashed; color="#999999";
+    curl [label="curl / demo screen", fillcolor="#eeeeee"];
+  }
+
+  subgraph cluster_service {
+    label="monitoring-service";
+    fontname="Helvetica-Bold";
+    style="rounded"; color="#2b6cb0"; penwidth=2;
+
+    http [label="HTTP layer\n(Express)\nvalidation, error mapping", fillcolor="#bee3f8"];
+    service [label="Service layer\nregistration, discovery,\nqueries", fillcolor="#bee3f8"];
+    poller [label="Poller\nretry + backoff,\nstate transitions", fillcolor="#90cdf4"];
+    repo [label="Repository", fillcolor="#90cdf4"];
+    dc_iface [label="DeviceClient\n(interface)", fillcolor="#fefcbf", shape=box, style="rounded,filled,dashed"];
+    cp_iface [label="ChecksumProvider\n(interface)", fillcolor="#fefcbf", shape=box, style="rounded,filled,dashed"];
+    rest_client [label="RestDeviceClient\n(complete)", fillcolor="#c6f6d5"];
+    grpc_client [label="GrpcDeviceClient\n(mock-verified)", fillcolor="#fed7d7"];
+    stub_checksum [label="StubChecksumProvider\nreturns null", fillcolor="#fed7d7"];
+  }
+
+  subgraph cluster_data {
+    label="Persistence";
+    fontname="Helvetica-Bold";
+    style=dashed; color="#999999";
+    postgres [label="Postgres\ndevices + diagnostics", shape=cylinder, fillcolor="#e2e8f0"];
+  }
+
+  subgraph cluster_devices {
+    label="Devices (simulated)";
+    fontname="Helvetica-Bold";
+    style=dashed; color="#999999";
+    rest_devices [label="4x REST devices\nrouter, switch,\ncamera-rest, door-access-rest", fillcolor="#eeeeee"];
+    grpc_devices [label="2x gRPC devices\ncamera-grpc, door-access-grpc", fillcolor="#eeeeee"];
+  }
+
+  curl -> http [label="  HTTP/JSON"];
+  http -> service;
+  service -> repo;
+  service -> dc_iface [label="  discovery"];
+  poller -> repo;
+  poller -> dc_iface [label="  health checks"];
+  poller -> cp_iface;
+  dc_iface -> rest_client [style=dashed];
+  dc_iface -> grpc_client [style=dashed];
+  cp_iface -> stub_checksum [style=dashed];
+  rest_client -> rest_devices [label="  HTTP"];
+  grpc_client -> grpc_devices [label="  gRPC"];
+  repo -> postgres [label="  SQL"];
+}

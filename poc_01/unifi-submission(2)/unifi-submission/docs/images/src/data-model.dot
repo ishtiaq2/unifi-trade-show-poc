@@ -1,0 +1,38 @@
+digraph data_model {
+  rankdir=LR;
+  bgcolor="white";
+  fontname="Helvetica";
+  node [fontname="Courier", fontsize=11, shape=plaintext];
+
+  devices [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6">
+      <tr><td bgcolor="#2b6cb0" align="left"><font color="white" face="Helvetica-Bold">devices</font></td></tr>
+      <tr><td align="left"><b>id</b> uuid PK</td></tr>
+      <tr><td align="left">name text</td></tr>
+      <tr><td align="left">address text UNIQUE</td></tr>
+      <tr><td align="left">protocol 'rest'|'grpc'</td></tr>
+      <tr><td align="left">capabilities jsonb</td></tr>
+      <tr><td align="left" bgcolor="#fefcbf">status 'reachable'|'suspect'|'down'</td></tr>
+      <tr><td align="left">consecutive_failures int</td></tr>
+      <tr><td align="left">last_checked_at timestamptz</td></tr>
+      <tr><td align="left">last_success_at timestamptz</td></tr>
+      <tr><td align="left">created_at / updated_at</td></tr>
+    </table>
+  >];
+
+  diagnostics [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6">
+      <tr><td bgcolor="#2b6cb0" align="left"><font color="white" face="Helvetica-Bold">diagnostics</font></td></tr>
+      <tr><td align="left"><b>id</b> uuid PK</td></tr>
+      <tr><td align="left"><i>device_id</i> uuid FK</td></tr>
+      <tr><td align="left">hw_version text</td></tr>
+      <tr><td align="left">sw_version text</td></tr>
+      <tr><td align="left">fw_version text</td></tr>
+      <tr><td align="left" bgcolor="#fefcbf">device_reported_status text</td></tr>
+      <tr><td align="left">checksum text (null until binary exists)</td></tr>
+      <tr><td align="left">recorded_at timestamptz</td></tr>
+    </table>
+  >];
+
+  devices -> diagnostics [label="  1 : many\n  (append-only snapshots)", fontname="Helvetica", fontsize=10];
+}
