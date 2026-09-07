@@ -39,7 +39,7 @@ about the monitoring service:
   service that never reports anything.
 - **`switch`** — reachable while self-reporting a fault, proving
   derived reachability and device-reported status are independent
-  facts (`../docs/assumptions.md` #8).
+  facts (`../dev-and-troubleshoot` #8).
 
 ### Hierarchy
 

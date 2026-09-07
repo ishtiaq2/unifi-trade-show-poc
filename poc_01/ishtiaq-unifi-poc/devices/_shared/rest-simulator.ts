@@ -11,7 +11,7 @@
  *   GET /diagnostics  → HW/SW/FW version + the device's self-reported
  *                       status. Checksum is deliberately NOT returned
  *                       here: the real checksum generator doesn't exist
- *                       yet (docs/assumptions.md #3), and the monitoring
+ *                       yet (dev-and-troubleshoot/assumptions.md #3), and the monitoring
  *                       service fills it in via its ChecksumProvider
  *                       seam rather than trusting a device to self-report
  *                       a checksum of its own data.

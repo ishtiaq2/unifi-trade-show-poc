@@ -3,7 +3,7 @@
  * rest-simulator.ts, with the same "one implementation, many profiles"
  * reasoning.
  *
- * This is the only gRPC server the PoC needs: per docs/assumptions.md #2
+ * This is the only gRPC server the PoC needs: per dev-and-troubleshoot/assumptions.md #2
  * the monitoring service's gRPC client is proven against this mock, not
  * against real hardware, which doesn't exist in this scenario.
  */

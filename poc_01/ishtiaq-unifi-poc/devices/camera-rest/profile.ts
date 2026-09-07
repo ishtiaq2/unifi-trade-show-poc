@@ -1,6 +1,6 @@
 // Intermittent, not broken: simulates a camera behind an unstable
 // network link. Demonstrates reachable -> suspect -> reachable, and must
-// NOT falsely settle on "down" (docs/assumptions.md #4).
+// NOT falsely settle on "down" (dev-and-troubleshoot/assumptions.md #4).
 //
 // failureRate is 0.15, not the more intuitive 0.35, because the rate
 // compounds: the monitoring service calls /health AND /diagnostics per
