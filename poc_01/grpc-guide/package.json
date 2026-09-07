@@ -1,0 +1,25 @@
+{
+  "name": "grpc-guide",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "server": "ts-node src/server.ts",
+    "demo:unary": "ts-node src/client-unary.ts",
+    "demo:server-stream": "ts-node src/client-server-stream.ts",
+    "demo:client-stream": "ts-node src/client-client-stream.ts",
+    "demo:bidi": "ts-node src/client-bidi.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.4",
+    "@grpc/proto-loader": "^0.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
