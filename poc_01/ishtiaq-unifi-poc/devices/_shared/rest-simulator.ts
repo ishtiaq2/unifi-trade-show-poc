@@ -57,6 +57,7 @@ export function createRestDevice(profile: DeviceProfile): Application {
       return;
     }
     res.json({
+      name: profile.name,
       hwVersion: profile.hwVersion,
       swVersion: profile.swVersion,
       fwVersion: profile.fwVersion,

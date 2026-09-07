@@ -8,6 +8,8 @@ import { resolvePort, type DeviceProfile } from "./types";
  */
 export function startRestDevice(profile: DeviceProfile): void {
   const app = createRestDevice(profile);
+  // Forces Express to pretty-print JSON and append a newline
+  app.set("json spaces", 2);
   const port = resolvePort(profile);
   const server = app.listen(port, () => {
     console.log(`[${profile.name}] REST device simulator listening on :${port}`);
