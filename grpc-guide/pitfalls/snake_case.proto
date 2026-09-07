@@ -1,0 +1,10 @@
+syntax = "proto3";
+package pitfall;
+
+service SnakeService {
+  rpc GetThing (ThingRequest) returns (Thing);
+}
+message ThingRequest {}
+message Thing {
+  string hardware_version = 1;
+}
