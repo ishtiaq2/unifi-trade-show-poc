@@ -1,0 +1,26 @@
+{
+  "name": "unifi-grpc-devices",
+  "version": "1.0.0",
+  "description": "gRPC device simulators — standalone. Four devices, all four failure behaviors, and a guided demo.",
+  "scripts": {
+    "camera-grpc": "ts-node camera-grpc/index.ts",
+    "door-access-grpc": "ts-node door-access-grpc/index.ts",
+    "camera-grpc-flaky": "ts-node camera-grpc-flaky/index.ts",
+    "door-access-grpc-dying": "ts-node door-access-grpc-dying/index.ts",
+    "devices": "concurrently -n camera,door,flaky,dying -c green,yellow,magenta,red \"npm:camera-grpc\" \"npm:door-access-grpc\" \"npm:camera-grpc-flaky\" \"npm:door-access-grpc-dying\"",
+    "demo": "ts-node demo/demo.ts",
+    "client": "ts-node _shared/test-grpc-client.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.4",
+    "@grpc/proto-loader": "^0.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "concurrently": "^9.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.0"
+  }
+}

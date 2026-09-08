@@ -1,0 +1,32 @@
+# All four gRPC device simulators, one command.
+#
+#   docker compose up            # all four
+#   docker compose up camera-grpc # just one
+#
+# Every service shares one `image:` tag on purpose — without it, four
+# `build: .` stanzas can produce four separately-tagged images with
+# identical content. Sharing the tag makes "build once" true.
+#
+# Works unchanged with podman-compose.
+
+services:
+  camera-grpc:
+    build: .
+    image: unifi-grpc-devices
+    command: npm run camera-grpc
+    ports: ["4005:4005"]
+
+  door-access-grpc:
+    image: unifi-grpc-devices
+    command: npm run door-access-grpc
+    ports: ["4006:4006"]
+
+  camera-grpc-flaky:
+    image: unifi-grpc-devices
+    command: npm run camera-grpc-flaky
+    ports: ["4007:4007"]
+
+  door-access-grpc-dying:
+    image: unifi-grpc-devices
+    command: npm run door-access-grpc-dying
+    ports: ["4008:4008"]

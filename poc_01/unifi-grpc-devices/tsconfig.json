@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // These run through ts-node only; tsc is used purely for
+    // typechecking. noEmit prevents .js files appearing next to their
+    // .ts sources, where they would silently shadow them on the next
+    // require() and run stale code with no error.
+    "noEmit": true
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": { "module": "CommonJS" }
+  },
+  "include": ["_shared", "camera-grpc", "door-access-grpc", "camera-grpc-flaky", "door-access-grpc-dying", "demo"]
+}
