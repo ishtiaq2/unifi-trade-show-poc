@@ -1,3 +1,5 @@
+### [admin@localhost devices]$ npx ts-node __tests__/device-test.ts
+
 ## door-access-rest: 
 * When exceeded the healthyRequests: 8 threshold during a test, 
 - the device is in its permanently dead goes-down state.

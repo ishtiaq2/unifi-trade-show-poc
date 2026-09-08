@@ -1,0 +1,67 @@
+# Postgres for the device monitoring PoC — self-contained.
+#
+#   cd db
+#   docker compose up -d          # start
+#   ./postgres/verify.sh          # confirm the schema actually works
+#   docker compose down           # stop, keep data
+#   docker compose down -v        # stop, WIPE data (needed to re-apply init.sql)
+#
+# Works unchanged with podman-compose.
+#
+# ---------------------------------------------------------------------
+# Networking note, because this module runs as its own compose project:
+#
+# Compose puts each project on its own network, so a container started
+# by ../devices/docker-compose.yml CANNOT reach `db` by hostname.
+# Two ways to connect them when the monitoring service arrives:
+#
+#   1. Via the published port below — anything on the host reaches
+#      Postgres at localhost:5432. Simplest, works today.
+#   2. Via a shared external network — uncomment the `networks` blocks
+#      here and add the same to the other compose files, then:
+#          docker network create unifi-net
+#      After that `db:5432` resolves from any container on that network.
+#
+# Option 1 is fine for development. Option 2 is what the combined stack
+# will want, since the monitoring service runs in a container itself.
+# ---------------------------------------------------------------------
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: unifi-db
+    environment:
+      POSTGRES_DB: poc
+      POSTGRES_USER: poc
+      POSTGRES_PASSWORD: poc
+    ports:
+      - "5432:5432"
+    volumes:
+      # Runs ONLY when the data directory is empty — i.e. on first
+      # start, or after `docker compose down -v`. Editing init.sql and
+      # re-running `up` will NOT re-apply it. See README.md.
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro,z
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Anything depending on the schema existing should wait on this
+      # with `condition: service_healthy`, not just on container start.
+      test: ["CMD-SHELL", "pg_isready -U poc -d poc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+    # --- for option 2 above, uncomment these three lines ---
+    # networks:
+    #   - unifi-net
+
+volumes:
+  # Named volume, so data survives `docker compose down`.
+  # Use `down -v` for a genuinely clean database.
+  pgdata:
+
+# --- for option 2 above, uncomment this block ---
+# networks:
+#   unifi-net:
+#     external: true
