@@ -1,6 +1,6 @@
 # Datasource module — runs the integration test against a real Postgres.
 #
-# NOTE ON BUILD CONTEXT: datasource/postgres.ts imports ../domain/types,
+# NOTE ON BUILD CONTEXT: datasource/sql-service.ts imports ../domain/types,
 # and Docker cannot COPY from outside the build context. So the context
 # is this directory (the module root containing BOTH datasource/ and
 # domain/), not datasource/ itself. docker-compose.yml sets that up.

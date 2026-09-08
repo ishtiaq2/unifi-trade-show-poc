@@ -42,7 +42,7 @@ function toDevice(row: DeviceRow): Device {
  * snake_case in the database, camelCase in the domain — the mapping is
  * confined to this file so nothing above it deals with column names.
  */
-export class DeviceRepository {
+export class SQLService {
   constructor(private pool: Pool) {}
 
   async listDevices(): Promise<Device[]> {

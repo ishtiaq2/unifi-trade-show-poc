@@ -1,4 +1,4 @@
-// datasource/__tests__/test-postgres.ts
+// datasource/__tests__/test-sql-service.ts
 //
 // Integration test for DeviceRepository against a REAL Postgres.
 // Nothing is mocked here on purpose: the entire job of this module is
@@ -10,7 +10,7 @@
 //   npm test                     # against localhost
 //   DB_HOST=unifi-db npm test     # against the container
 import { Pool } from "pg";
-import { DeviceRepository } from "../postgres";
+import { SQLService } from "../sql-service";
 
 const pool = new Pool({
   host: process.env.DB_HOST || "localhost",
@@ -34,7 +34,7 @@ function assert(condition: boolean, description: string): void {
 }
 
 async function runTests(): Promise<void> {
-  const repo = new DeviceRepository(pool);
+  const sql = new SQLService(pool);
 
   // Clear anything a previous aborted run left behind. Without this the
   // UNIQUE constraint on `address` makes the next run fail for a reason
@@ -42,7 +42,7 @@ async function runTests(): Promise<void> {
   await pool.query("DELETE FROM devices WHERE address = $1", [TEST_ADDRESS]);
 
   console.log("\n--- 1. Creating a device ---");
-  const device = await repo.createDevice({
+  const device = await sql.createDevice({
     name: "Test Router",
     address: TEST_ADDRESS,
   });
@@ -53,17 +53,17 @@ async function runTests(): Promise<void> {
   assert(device.protocol === null, "protocol is null until discovered");
 
   console.log("\n--- 2. Finding it back ---");
-  const found = await repo.findByAddress(TEST_ADDRESS);
+  const found = await sql.findByAddress(TEST_ADDRESS);
   assert(found?.id === device.id, "findByAddress returns the same device");
-  const listed = await repo.listDevices();
+  const listed = await sql.listDevices();
   assert(
     listed.some((d) => d.id === device.id),
     "listDevices includes it",
   );
 
   console.log("\n--- 3. Updating status ---");
-  await repo.updateStatus(device.id, "suspect", 2, false);
-  const suspect = await repo.getDevice(device.id);
+  await sql.updateStatus(device.id, "suspect", 2, false);
+  const suspect = await sql.getDevice(device.id);
   assert(suspect?.status === "suspect", "status updated to suspect");
   assert(suspect?.consecutiveFailures === 2, "failure count updated");
   assert(suspect?.lastCheckedAt !== null, "lastCheckedAt set");
@@ -72,28 +72,28 @@ async function runTests(): Promise<void> {
     "lastSuccessAt NOT set on a failed check",
   );
 
-  await repo.updateStatus(device.id, "reachable", 0, true);
-  const recovered = await repo.getDevice(device.id);
+  await sql.updateStatus(device.id, "reachable", 0, true);
+  const recovered = await sql.getDevice(device.id);
   assert(recovered?.status === "reachable", "status updated to reachable");
   assert(recovered?.lastSuccessAt !== null, "lastSuccessAt set on success");
 
   console.log("\n--- 4. Setting capabilities ---");
-  await repo.setCapabilities(device.id, "rest", {
+  await sql.setCapabilities(device.id, "rest", {
     capabilities: ["diagnostics"],
   });
-  const discovered = await repo.getDevice(device.id);
+  const discovered = await sql.getDevice(device.id);
   assert(discovered?.protocol === "rest", "protocol persisted");
   assert(discovered?.capabilities !== null, "capabilities persisted as jsonb");
 
   console.log("\n--- 5. Recording diagnostics ---");
-  await repo.recordDiagnostics(device.id, {
+  await sql.recordDiagnostics(device.id, {
     hwVersion: "HW-1.0",
     swVersion: "SW-2.1",
     fwVersion: "FW-3.0",
     deviceReportedStatus: "ok",
     checksum: null, // the real production value until the binary exists
   });
-  const first = await repo.latestDiagnostics(device.id);
+  const first = await sql.latestDiagnostics(device.id);
   assert(first?.hwVersion === "HW-1.0", "diagnostics round-trip hwVersion");
   assert(first?.deviceReportedStatus === "ok", "device-reported status stored");
   assert(first?.checksum === null, "null checksum stored as null, not faked");
@@ -101,14 +101,14 @@ async function runTests(): Promise<void> {
   // A second snapshot proves diagnostics are append-only history, and
   // that latestDiagnostics really returns the newest row rather than
   // whichever one the database happened to return first.
-  await repo.recordDiagnostics(device.id, {
+  await sql.recordDiagnostics(device.id, {
     hwVersion: "HW-1.0",
     swVersion: "SW-2.2",
     fwVersion: "FW-3.1",
     deviceReportedStatus: "degraded",
     checksum: "abc123",
   });
-  const latest = await repo.latestDiagnostics(device.id);
+  const latest = await sql.latestDiagnostics(device.id);
   assert(
     latest?.swVersion === "SW-2.2",
     "latestDiagnostics returns the newest row",
@@ -120,9 +120,9 @@ async function runTests(): Promise<void> {
   assert(latest?.checksum === "abc123", "checksum round-trips when present");
 
   console.log("\n--- 6. Deleting, and cascade ---");
-  const deleted = await repo.deleteDevice(device.id);
+  const deleted = await sql.deleteDevice(device.id);
   assert(deleted === true, "deleteDevice reports success");
-  assert((await repo.getDevice(device.id)) === null, "device is gone");
+  assert((await sql.getDevice(device.id)) === null, "device is gone");
 
   const { rows } = await pool.query(
     "SELECT count(*)::int AS n FROM diagnostics WHERE device_id = $1",
@@ -130,13 +130,13 @@ async function runTests(): Promise<void> {
   );
   assert(rows[0].n === 0, "its diagnostics were cascade-deleted");
 
-  const deletedAgain = await repo.deleteDevice(device.id);
+  const deletedAgain = await sql.deleteDevice(device.id);
   assert(deletedAgain === false, "deleting a missing device returns false");
 }
 
 runTests()
   .then(async () => {
-    console.log(`\n${checks} checks passed\n`);
+    console.log(`\n${checks} checks passed !!!\n`);
     await pool.end();
     process.exit(0);
   })

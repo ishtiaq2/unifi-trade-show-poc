@@ -6,9 +6,9 @@ integration test that runs against a real Postgres.
 ```
 .
 ├── datasource/
-│   ├── postgres.ts              DeviceRepository — the only file that knows SQL
+│   ├── sql-service.ts              DeviceRepository — the only file that knows SQL
 │   └── __tests__/
-│       └── test-postgres.ts      integration test, 25 checks
+│       └── test-sql-service.ts      integration test, 25 checks
 ├── domain/
 │   └── types.ts                  Device, Diagnostics, DeviceStatus…
 ├── Dockerfile
@@ -56,7 +56,7 @@ DB_HOST=192.168.1.50 npm test
 
 ## Why the build context is the module root, not `datasource/`
 
-`datasource/postgres.ts` imports `../domain/types`, and **Docker cannot
+`datasource/sql-service.ts` imports `../domain/types`, and **Docker cannot
 `COPY` from outside the build context**. So `docker-compose.yml` sets
 `context: .` — the directory containing *both* `datasource/` and
 `domain/` — with the Dockerfile copying each in explicitly.

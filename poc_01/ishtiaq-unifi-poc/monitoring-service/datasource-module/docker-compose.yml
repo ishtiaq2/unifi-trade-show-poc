@@ -28,7 +28,7 @@
 services:
   datasource:
     build:
-      # The module root, NOT ./datasource — postgres.ts imports
+      # The module root, NOT ./datasource — sql-service.ts imports
       # ../domain/types, and Docker cannot COPY above the context.
       context: .
       dockerfile: Dockerfile
