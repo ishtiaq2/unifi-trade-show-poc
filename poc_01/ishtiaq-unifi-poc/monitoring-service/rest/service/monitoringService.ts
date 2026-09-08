@@ -1,6 +1,6 @@
 // monitoring-service/rest/service/monitoringService.ts
 
-import { SQLService } from "../datasource/sql-service";
+import { SQLService } from "../../datasource-module/datasource/sql-service";
 import { discoverProtocol } from "../../clients/clientFactory";
 import type { Device, Diagnostics } from "../domain/types";
 import type { Logger } from "../domain/logger";

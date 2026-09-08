@@ -3,8 +3,8 @@ import express from 'express';
 import { Pool } from 'pg';
 import { SQLService } from '../../datasource-module/datasource/sql-service';
 import { MonitoringService, DuplicateDeviceError, DeviceNotFoundError } from '../service/monitoringService';
+import { logger } from '../domain/logger'; // <-- Import your custom logger
 
-// 1. Initialize dependencies
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
@@ -14,12 +14,12 @@ const pool = new Pool({
 });
 
 const sqlService = new SQLService(pool);
-const monitoringService = new MonitoringService(sqlService, console);
+// Pass the structured logger here instead of console
+const monitoringService = new MonitoringService(sqlService, logger);
 
 const app = express();
 app.use(express.json());
 
-// 2. Define HTTP Routes
 app.get('/devices', async (req, res) => {
   const devices = await monitoringService.listDevices();
   res.json(devices);
@@ -64,8 +64,7 @@ app.delete('/devices/:id', async (req, res) => {
   }
 });
 
-// 3. Boot Server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`REST API listening on port ${port}`);
+  logger.info(`REST API listening on port ${port}`);
 });

@@ -1,5 +1,3 @@
-// rest/domain/logger.ts
-
 type Level = "info" | "warn" | "error";
 
 export interface Logger {
