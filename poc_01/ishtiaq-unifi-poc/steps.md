@@ -6,7 +6,7 @@
 
 ✅ 1. Devices                 ← Done
 ✅ 2. Postgres + schema        ← next (nothing above works without it) - Done
-3. Service skeleton          config → pool → /healthz → shutdown
+✅ 3. Service skeleton          config → pool → /healthz → shutdown
    (no polling yet — just prove it boots and connects)
 4. Repository + REST API      POST/GET/DELETE /devices, tested against real Postgres
 5. DeviceClient (REST)        talk to your 4 REST devices for real

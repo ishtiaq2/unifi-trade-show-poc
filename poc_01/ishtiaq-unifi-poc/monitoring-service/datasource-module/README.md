@@ -6,9 +6,9 @@ integration test that runs against a real Postgres.
 ```
 .
 ├── datasource/
-│   ├── sql-service.ts              DeviceRepository — the only file that knows SQL
+│   ├── sql-monitoringService.ts              DeviceRepository — the only file that knows SQL
 │   └── __tests__/
-│       └── test-sql-service.ts      integration test, 25 checks
+│       └── test-sql-monitoringService.ts      integration test, 25 checks
 ├── domain/
 │   └── types.ts                  Device, Diagnostics, DeviceStatus…
 ├── Dockerfile
