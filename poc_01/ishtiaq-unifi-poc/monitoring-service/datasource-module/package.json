@@ -1,0 +1,19 @@
+{
+  "name": "unifi-datasource",
+  "version": "1.0.0",
+  "description": "Postgres datasource (DeviceRepository) for the device monitoring PoC",
+  "scripts": {
+    "test": "ts-node datasource/__tests__/test-postgres.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "@types/pg": "^8.23.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

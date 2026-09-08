@@ -1,0 +1,9 @@
+# Without this, COPY overwrites the image's freshly installed
+# node_modules with the host's — bloating the image, and breaking it
+# outright if a dependency has a native binding for another platform.
+# `pg` has an optional native variant, so this matters here.
+node_modules
+npm-debug.log*
+dist
+**/*.js
+.git

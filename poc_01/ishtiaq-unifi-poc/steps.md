@@ -1,9 +1,11 @@
-# This is the development life cycle Guide: 
+# Iterative, Test-Driven Development Architecture
+
+## This is the development life cycle Guide:
 ### Identified steps to follow and cover:
 #### Constraint: Each step should be independently deployable and testable
 
 ✅ 1. Devices                 ← Done
-2. Postgres + schema        ← next (nothing above works without it), In Progress
+✅ 2. Postgres + schema        ← next (nothing above works without it) - Done
 3. Service skeleton          config → pool → /healthz → shutdown
    (no polling yet — just prove it boots and connects)
 4. Repository + REST API      POST/GET/DELETE /devices, tested against real Postgres

@@ -1,0 +1,52 @@
+# Datasource module — runs its integration test against Postgres.
+#
+#   docker compose run --rm datasource      # run the test, see the exit code
+#   docker compose build                     # rebuild after a code change
+#
+# Works unchanged with podman-compose.
+#
+# ---------------------------------------------------------------------
+# This connects to the ALREADY-RUNNING `unifi-db` container started by
+# ../db/docker-compose.yml. It does not start its own database — one
+# database, one owner, so the schema can't drift between two copies.
+#
+# Because db/ is a separate compose project, its network is separate
+# too. Two ways to reach it; pick the one matching how you started it:
+#
+#   1. SHARED NETWORK (recommended, and what's configured below).
+#          docker network create unifi-net
+#      Then uncomment the `networks` block in ../db/docker-compose.yml
+#      and restart the database. `unifi-db:5432` then resolves here.
+#
+#   2. VIA THE HOST'S PUBLISHED PORT — no shared network needed, but
+#      the hostname differs by platform, which is why it isn't the
+#      default:
+#        Linux : add `network_mode: "host"` and use DB_HOST=localhost
+#        Mac/Win: DB_HOST=host.docker.internal
+# ---------------------------------------------------------------------
+
+services:
+  datasource:
+    build:
+      # The module root, NOT ./datasource — postgres.ts imports
+      # ../domain/types, and Docker cannot COPY above the context.
+      context: .
+      dockerfile: Dockerfile
+    image: unifi-datasource
+    environment:
+      # Container name of the database, resolvable on the shared network.
+      DB_HOST: "${DB_HOST:-unifi-db}"
+      DB_PORT: "${DB_PORT:-5432}"
+      DB_USER: "${DB_USER:-poc}"
+      DB_PASSWORD: "${DB_PASSWORD:-poc}"
+      DB_NAME: "${DB_NAME:-poc}"
+    networks:
+      - unifi-net
+
+networks:
+  # Created once with: docker network create unifi-net
+  # `external: true` means compose expects it to already exist rather
+  # than creating (and later deleting) it — correct here, since the
+  # database owns its own lifecycle independently of this module.
+  unifi-net:
+    external: true
