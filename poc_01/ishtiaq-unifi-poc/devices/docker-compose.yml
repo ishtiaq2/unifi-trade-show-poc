@@ -46,3 +46,4 @@ services:
   door-access-grpc:
     image: unifi-devices
     command: npx ts-node door-access-grpc/index.ts
+    ports: [ "4006:4006" ]
