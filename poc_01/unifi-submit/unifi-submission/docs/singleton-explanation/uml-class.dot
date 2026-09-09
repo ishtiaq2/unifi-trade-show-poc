@@ -1,0 +1,60 @@
+digraph uml {
+  rankdir=TB;
+  bgcolor="white";
+  fontname="Helvetica";
+  node [fontname="Helvetica", fontsize=11, shape=plaintext];
+  edge [fontname="Helvetica", fontsize=10];
+
+  interface [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6">
+      <tr><td bgcolor="#fefcbf" align="center"><font face="Helvetica-Oblique">&#171;interface&#187;</font></td></tr>
+      <tr><td bgcolor="#fefcbf" align="center"><b>DeviceClient</b></td></tr>
+      <tr><td align="left">+ discoverCapabilities(address): Promise&lt;Capabilities&gt;</td></tr>
+      <tr><td align="left">+ checkHealth(address): Promise&lt;HealthCheckResult&gt;</td></tr>
+    </table>
+  >];
+
+  restimpl [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6">
+      <tr><td bgcolor="#c6f6d5" align="center"><b>RestDeviceClient</b></td></tr>
+      <tr><td align="left">- REQUEST_TIMEOUT_MS: number = 2000</td></tr>
+      <tr><td align="left">+ discoverCapabilities(address): Promise&lt;Capabilities&gt;</td></tr>
+      <tr><td align="left">+ checkHealth(address): Promise&lt;HealthCheckResult&gt;</td></tr>
+    </table>
+  >];
+
+  grpcimpl [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6" color="#999999">
+      <tr><td bgcolor="white" align="center"><font color="#999999">GrpcDeviceClient</font></td></tr>
+      <tr><td align="left"><font color="#999999">step 8 — not built yet</font></td></tr>
+    </table>
+  >];
+
+  factory [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6">
+      <tr><td bgcolor="#bee3f8" align="center"><font face="Helvetica-Oblique">&#171;module&#187;</font></td></tr>
+      <tr><td bgcolor="#bee3f8" align="center"><b>clientFactory.ts</b></td></tr>
+      <tr><td align="left">- restClient: RestDeviceClient &#160;&#160;&#160;<font face="Helvetica-Oblique" point-size="9">(module-level singleton — built once)</font></td></tr>
+      <tr><td align="left">+ clientFor(protocol): DeviceClient</td></tr>
+      <tr><td align="left">+ discoverProtocol(address): Promise&lt;...&gt;</td></tr>
+    </table>
+  >];
+
+  service [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6">
+      <tr><td bgcolor="#e2e8f0" align="center"><b>MonitoringService</b></td></tr>
+      <tr><td align="left">+ registerDevice(input): Promise&lt;Device&gt;</td></tr>
+    </table>
+  >];
+
+  restimpl -> interface [arrowhead=empty, style=solid, label="  realizes"];
+  grpcimpl -> interface [arrowhead=empty, style=dashed, color="#999999", fontcolor="#999999", label="  realizes (future)"];
+
+  factory -> restimpl [arrowhead=diamond, label="  owns 1 instance\l  (composition)\l"];
+  factory -> interface [arrowhead=vee, style=dashed, label="  returns\l  (as the interface\l  type, not the\l  concrete class)\l"];
+
+  service -> factory [arrowhead=vee, label="  calls\l  discoverProtocol()\l"];
+
+  { rank=same; interface; }
+  { rank=same; restimpl; grpcimpl; }
+}
