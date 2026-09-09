@@ -8,7 +8,7 @@
 ✅ 2. Postgres + schema        ← next (nothing above works without it)
 ✅ 3. Service skeleton          config → pool → /healthz → shutdown
 ✅ 4. Repository + REST API      POST/GET/DELETE /devices, tested against real Postgres
-5. DeviceClient (REST)        talk to your 4 REST devices for real
+✅ 5. DeviceClient (REST)        talk to your 4 REST devices for real
 6. State machine              pure logic, unit-tested, no I/O
 7. Poller                     wire 5 + 6 together, add retry/backoff
 8. gRPC client                same interface, second implementation
@@ -19,7 +19,7 @@
 ### How to make all 6 devices up and running
 [admin@localhost devices]$ podman-compose up -d
 
-### Test: curl -X GET http://<ip>:<port[4001 to 4006]>/<[health or diagnostics]>
+### Test: curl -X GET http://<ip>:<port[4001 to 4004]>/<[health or diagnostics]>
 
 ### OR run device-tests
 - [admin@localhost devices]$ npx ts-node __tests__/device-test.ts
@@ -30,12 +30,12 @@
 ### 
 
 
-## Bringing the system up through step 5
+## Bringing the system up through step 4
 
 ### 1. Devices
 cd ../devices
 podman-compose up -d
-curl -x GET http://localhost:<4001-4004>/health
+curl -X GET http://localhost:<4001-4004>/health
 
 ### 2. Database
    cd db
@@ -75,3 +75,4 @@ podman-compose up --build
    - OR
    - podman exec -it unifi-db psql -U poc -d poc   
    - Exit psql with \q
+

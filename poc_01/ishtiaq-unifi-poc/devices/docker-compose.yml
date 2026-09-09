@@ -1,7 +1,5 @@
 # Runs all 6 device simulators found in this folder — one image, built
 # once, with each service selecting which device to start via `command`.
-# Matches the individual `podman run` commands in README.md; this is the
-# one-command version of the same thing.
 #
 #   docker compose build       # build the shared image once
 #   docker compose up          # all 6, foreground
@@ -14,6 +12,18 @@
 # the Dockerfile's own "one image for every device simulator" design.
 # Sharing the tag makes "build once" true regardless of compose version.
 #
+# FIXED: every service now declares `networks: [unifi-net]`. Without
+# this, compose puts all 6 containers on an auto-created
+# "devices_default" network, invisible to monitoring-service (which is
+# correctly on unifi-net). That's why registering a running device
+# through the REST API still resolved protocol: null — not a code bug,
+# a network-membership bug. `podman network connect unifi-net <name>`
+# fixes one container until it's recreated; this fixes it permanently
+# for all six, the same way monitoring-service/docker-compose.yml
+# already does it correctly.
+#
+# Requires the network to exist first: podman network create unifi-net
+#
 # Works unchanged with podman-compose.
 
 services:
@@ -22,28 +32,46 @@ services:
     image: unifi-devices
     command: npx ts-node router/index.ts
     ports: ["4001:4001"]
+    networks:
+      - unifi-net
 
   switch:
     image: unifi-devices
     command: npx ts-node switch/index.ts
     ports: ["4002:4002"]
+    networks:
+      - unifi-net
 
   camera-rest:
     image: unifi-devices
     command: npx ts-node camera-rest/index.ts
     ports: ["4003:4003"]
+    networks:
+      - unifi-net
 
   door-access-rest:
     image: unifi-devices
     command: npx ts-node door-access-rest/index.ts
     ports: ["4004:4004"]
+    networks:
+      - unifi-net
 
   camera-grpc:
     image: unifi-devices
     command: npx ts-node camera-grpc/index.ts
     ports: ["4005:4005"]
+    networks:
+      - unifi-net
 
   door-access-grpc:
     image: unifi-devices
     command: npx ts-node door-access-grpc/index.ts
-    ports: [ "4006:4006" ]
+    ports: ["4006:4006"]
+    networks:
+      - unifi-net
+
+networks:
+  # Created once with: podman network create unifi-net
+  # external: true — this module doesn't own the network's lifecycle.
+  unifi-net:
+    external: true

@@ -54,9 +54,12 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-    # --- for option 2 above, uncomment these three lines ---
-    # networks:
-    #   - unifi-net
+    # FIXED: was commented out — meant unifi-db only ended up on
+    # unifi-net because of a manual `podman network connect`, which
+    # doesn't survive `docker compose down && up` (only stop/start).
+    # Declaring it here makes the attachment permanent and automatic.
+    networks:
+      - unifi-net
 
 volumes:
   # Named volume, so data survives `docker compose down`.
@@ -65,5 +68,5 @@ volumes:
 
 # --- for option 2 above, uncomment this block ---
 networks:
-   unifi-net:
-     external: true
+  unifi-net:
+    external: true

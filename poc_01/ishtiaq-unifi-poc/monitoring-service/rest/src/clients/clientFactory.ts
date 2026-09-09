@@ -25,9 +25,7 @@ export function clientFor(protocol: Protocol): DeviceClient {
  * call: step 8 adds a try/catch fallback to gRPC here, and nothing
  * calling this function needs to change when that happens.
  */
-export async function discoverProtocol(
-  address: string,
-): Promise<{ protocol: Protocol; capabilities: unknown }> {
+export async function discoverProtocol(address: string): Promise<{ protocol: Protocol; capabilities: unknown }> {
   const capabilities = await restClient.discoverCapabilities(address);
   return { protocol: "rest", capabilities };
 }
