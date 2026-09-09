@@ -1,4 +1,4 @@
-// datasource/__tests__/test-sql-monitoringService.ts
+// monitoring-service/datasource-module/data-source/__tests__/test-postgres.ts
 //
 // Integration test for DeviceRepository against a REAL Postgres.
 // Nothing is mocked here on purpose: the entire job of this module is

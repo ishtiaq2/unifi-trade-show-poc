@@ -2,5 +2,5 @@ node_modules
 npm-debug.log*
 dist
 **/*.js
-datasource/__tests__
+test
 .git

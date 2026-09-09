@@ -1,0 +1,39 @@
+# REST API for the device monitoring PoC — step 4.
+#
+#   cd monitoring-service
+#   docker compose up --build
+#
+# Connects to the ALREADY-RUNNING unifi-db container (started by
+# ../db/docker-compose.yml), the same way datasource-module's compose
+# file does. It does not start its own database.
+#
+# Requires the shared network to exist first:
+#   docker network create unifi-net
+# and unifi-db to have `networks: [unifi-net]` uncommented in
+# ../db/docker-compose.yml (restart it after uncommenting).
+#
+# Works unchanged with podman-compose.
+
+services:
+  rest:
+    build:
+      # monitoring-service/, NOT rest/ — src/index.ts imports
+      # ../../datasource-module/..., and Docker cannot COPY from
+      # outside the build context. See rest/Dockerfile.
+      context: .
+      dockerfile: rest/Dockerfile
+    image: unifi-monitoring-rest
+    environment:
+      DATABASE_URL: "postgres://${DB_USER:-poc}:${DB_PASSWORD:-poc}@${DB_HOST:-unifi-db}:${DB_PORT:-5432}/${DB_NAME:-poc}"
+      PORT: "3000"
+    ports:
+      - "3000:3000"
+    networks:
+      - unifi-net
+
+networks:
+  # Created once with: docker network create unifi-net
+  # external: true — this module doesn't own the network's lifecycle,
+  # the database does (same pattern as datasource-module's compose file).
+  unifi-net:
+    external: true

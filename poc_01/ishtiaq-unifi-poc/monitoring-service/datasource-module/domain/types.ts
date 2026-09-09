@@ -1,3 +1,5 @@
+// monitoring-service/datasource-module/domain/types.ts
+
 export type Protocol = 'rest' | 'grpc';
 export type DeviceStatus = 'reachable' | 'suspect' | 'down';
 
