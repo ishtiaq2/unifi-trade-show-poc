@@ -1,0 +1,46 @@
+<svg viewBox="0 0 1220 754" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+<rect width="1220" height="754" fill="white"/>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2b6cb0"/></marker><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#718096"/></marker></defs>
+<text x="610.0" y="30" text-anchor="middle" font-size="18" font-weight="bold">Real run: monitoring-service/rest/src/clients/clientFactory.ts</text>
+<rect x="40.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="110.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Node</text>
+<line x1="110.0" y1="75" x2="110.0" y2="714" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="290.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="360.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">clientFactory.ts</text>
+<line x1="360.0" y1="75" x2="360.0" y2="714" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="540.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="610.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">restClient</text>
+<line x1="610.0" y1="75" x2="610.0" y2="714" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="790.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="860.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">MonitoringService</text>
+<line x1="860.0" y1="75" x2="860.0" y2="714" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="1040.0" y="45" width="140" height="30" rx="5" fill="#2d3748"/>
+<text x="1110.0" y="65" text-anchor="middle" fill="white" font-size="12" font-weight="bold">router-1 (:4001)</text>
+<line x1="1110.0" y1="75" x2="1110.0" y2="714" stroke="#cbd5e0" stroke-width="1.5"/>
+<rect x="120.0" y="94" width="480" height="38" fill="#fefcbf" stroke="#d69e2e" rx="3"/>
+<text x="360.0" y="110" text-anchor="middle" font-size="11" font-style="italic">PHASE 1 — rest/src/index.ts starts,</text>
+<text x="360.0" y="124" text-anchor="middle" font-size="11" font-style="italic">imports monitoringService.ts, which imports clientFactory.ts</text>
+<line x1="110.0" y1="158" x2="360.0" y2="158" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="235.0" y="152" text-anchor="middle" font-size="11.5" fill="#1a202c">first import — 14:37:36.630Z</text>
+<line x1="360.0" y1="210" x2="610.0" y2="210" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="485.0" y="204" text-anchor="middle" font-size="11.5" fill="#1a202c">new RestDeviceClient()</text>
+<line x1="610.0" y1="262" x2="360.0" y2="262" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="485.0" y="256" text-anchor="middle" font-size="11.5" fill="#4a5568">built — 14:37:36.631Z</text>
+<rect x="676.0" y="298" width="368" height="38" fill="#fefcbf" stroke="#d69e2e" rx="3"/>
+<text x="860.0" y="314" text-anchor="middle" font-size="11" font-style="italic">service now listening on :3000 — 14:37:36.935Z</text>
+<text x="860.0" y="328" text-anchor="middle" font-size="11" font-style="italic">(1.4s pass with nothing happening)</text>
+<rect x="684.0" y="346" width="352" height="24" fill="#fefcbf" stroke="#d69e2e" rx="3"/>
+<text x="860.0" y="362" text-anchor="middle" font-size="11" font-style="italic">PHASE 2 — real curl -X POST /devices arrives</text>
+<line x1="860.0" y1="396" x2="360.0" y2="396" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="610.0" y="390" text-anchor="middle" font-size="11.5" fill="#1a202c">discoverProtocol('localhost:4001') — 14:37:38.319Z</text>
+<line x1="360.0" y1="448" x2="610.0" y2="448" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="485.0" y="442" text-anchor="middle" font-size="11.5" fill="#1a202c">restClient.discoverCapabilities(...) — SAME instance as Phase 1</text>
+<line x1="610.0" y1="500" x2="1110.0" y2="500" stroke="#2b6cb0" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="860.0" y="494" text-anchor="middle" font-size="11.5" fill="#1a202c">GET /health</text>
+<line x1="1110.0" y1="552" x2="610.0" y2="552" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="860.0" y="546" text-anchor="middle" font-size="11.5" fill="#4a5568">200 {protocol:'rest', deviceName:'router-1'}</text>
+<line x1="610.0" y1="604" x2="360.0" y2="604" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="485.0" y="598" text-anchor="middle" font-size="11.5" fill="#4a5568">Capabilities</text>
+<line x1="360.0" y1="656" x2="860.0" y2="656" stroke="#718096" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ar)"/>
+<text x="610.0" y="650" text-anchor="middle" font-size="11.5" fill="#4a5568">{protocol:'rest', capabilities} — 14:37:38.403Z registered</text>
+</svg>

@@ -20,3 +20,10 @@ curl -s -X DELETE http://192.168.0.45:3000/devices/<id_from_get>
 curl -X GET http://192.168.0.45:3000/devices/
 
 ---
+
+
+## How to run state machine test
+cd rest
+npm test
+### Restlt: 
+* ✓ test/statemachine.spec.ts (6 tests) 4ms

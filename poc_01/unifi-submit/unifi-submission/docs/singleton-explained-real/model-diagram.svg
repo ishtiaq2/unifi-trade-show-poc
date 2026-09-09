@@ -1,0 +1,41 @@
+<svg viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="480" fill="white"/>
+
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold">
+    monitoring-service/rest/src/clients/clientFactory.ts — Real Timestamps
+  </text>
+
+  <!-- PHASE 1 box -->
+  <rect x="30" y="60" width="840" height="140" rx="8" fill="#c6f6d5" stroke="#22543d" stroke-width="1.5"/>
+  <text x="50" y="88" font-size="15" font-weight="bold" fill="#22543d">PHASE 1 — 14:37:36.630Z, when rest/src/index.ts starts (before .listen())</text>
+  <text x="50" y="112" font-size="12.5">index.ts imports MonitoringService, which imports clientFactory.ts for the first time in the process.</text>
+  <text x="50" y="132" font-size="12.5" font-family="monospace" fill="#22543d" font-weight="bold">const restClient = new RestDeviceClient();   // clientFactory.ts, line 5</text>
+  <text x="50" y="152" font-size="12.5">Runs at 14:37:36.631Z — 0.3 seconds before "rest service started" even logs. No request has arrived yet.</text>
+  <text x="50" y="172" font-size="12.5">Node caches the finished module. Every later "import { discoverProtocol } from './clientFactory'" —</text>
+  <text x="50" y="188" font-size="12.5">from monitoringService.ts or anywhere else — reuses this same restClient, never rebuilds it.</text>
+
+  <!-- arrow down -->
+  <line x1="450" y1="200" x2="450" y2="225" stroke="#555" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="465" y="217" font-size="11" fill="#555">app keeps running...</text>
+
+  <!-- PHASE 2 box -->
+  <rect x="30" y="235" width="840" height="210" rx="8" fill="#bee3f8" stroke="#2b6cb0" stroke-width="1.5"/>
+  <text x="50" y="263" font-size="15" font-weight="bold" fill="#2b6cb0">PHASE 2 — 14:37:38.319Z, 1.4 seconds later — a real curl -X POST /devices arrives</text>
+  <text x="50" y="287" font-size="12.5">MonitoringService.registerDevice({ name: "router-1", address: "localhost:4001" }) runs, and calls:</text>
+  <text x="50" y="307" font-size="12.5" font-family="monospace" fill="#2b6cb0" font-weight="bold">discoverProtocol(device.address)   // monitoringService.ts, line 72</text>
+  <text x="50" y="331" font-size="12.5">discoverProtocol lives in clientFactory.ts and reads "restClient" — a variable declared ABOVE it in the</text>
+  <text x="50" y="349" font-size="12.5">SAME file. Ordinary JavaScript closure/scope, not dependency injection: any function can see any variable</text>
+  <text x="50" y="367" font-size="12.5">declared earlier in its own module, the same way it can see an imported name.</text>
+  <text x="50" y="391" font-size="12.5" font-weight="bold">restClient already existed — built 1.4s earlier in Phase 1. Result: protocol:"rest", the real router's capabilities.</text>
+  <text x="50" y="413" font-size="12.5">Register switch-1, camera-rest-1, etc. and Phase 2 repeats for each — Phase 1 still never runs again.</text>
+
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="465" text-anchor="middle" font-size="12" font-style="italic" fill="#555">
+    Real timestamps from an actual run of your project, 2026-09-09 — not simulated.
+  </text>
+</svg>
