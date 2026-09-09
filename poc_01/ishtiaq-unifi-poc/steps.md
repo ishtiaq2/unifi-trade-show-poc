@@ -76,3 +76,23 @@ podman-compose up --build
    - podman exec -it unifi-db psql -U poc -d poc   
    - Exit psql with \q
 
+
+
+## Now that we have covered step 5, let's use our web server to register a device and proble for us:
+### Register device
+
+curl -X POST http://192.168.1.249:3000/devices \
+-H "Content-Type: application/json" \
+-d '{"name":"Front Door Camera", "address":"camera-rest:4003"}'
+where camera-reset is the service name and port is the service port
+the address could be used to make an http contact with the device:
+
+### GET a list of devices:
+curl -X GET http://192.168.1.249:3000/devices
+
+http://192.168.1.249:4003
+or from within the server:
+camera-rest = IP
+4003 = PORT
+address=camera-rest:4003
+const healthRes = await fetchWithTimeout(`http://${address}/health`);
