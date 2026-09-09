@@ -5,10 +5,9 @@
 #### Constraint: Each step should be independently deployable and testable
 
 ✅ 1. Devices                 ← Done
-✅ 2. Postgres + schema        ← next (nothing above works without it) - Done
+✅ 2. Postgres + schema        ← next (nothing above works without it)
 ✅ 3. Service skeleton          config → pool → /healthz → shutdown
-   (no polling yet — just prove it boots and connects)
-4. Repository + REST API      POST/GET/DELETE /devices, tested against real Postgres
+✅ 4. Repository + REST API      POST/GET/DELETE /devices, tested against real Postgres
 5. DeviceClient (REST)        talk to your 4 REST devices for real
 6. State machine              pure logic, unit-tested, no I/O
 7. Poller                     wire 5 + 6 together, add retry/backoff
@@ -31,8 +30,48 @@
 ### 
 
 
+## Bringing the system up through step 5
 
+### 1. Devices
+cd ../devices
+podman-compose up -d
+curl -x GET http://localhost:<4001-4004>/health
 
+### 2. Database
+   cd db
+   podman-compose up -d
+   ./postgres/verify.sh          # expect: 13 passed, 0 failed
 
+   * Shared network (skip if already done)
+      podman network ls | grep unifi-net
+      or, for a detailed info
+      podman network inspect unifi-net
 
+   * if not connected
+      podman network create unifi-net
+      podman network connect unifi-net unifi-db
+      podman inspect unifi-db --format '{{.NetworkSettings.Networks}}'
 
+### 3. Monitoring service
+cd ../monitoring-service
+podman-compose up --build
+* Confirm it's connected and answering:
+- curl -s http://localhost:3000/healthz
+  - {"ok":true}
+
+#### curl examples — real responses shown for each
+
+   * Register a device (protocol resolves via real discovery):
+     curl -X POST http://localhost:3000/devices \
+     -H "Content-Type: application/json" \
+     -d '{"name":"router-1","address":"router:4001"}'
+    
+   * List everything:
+   - curl http://localhost:3000/devices
+   - curl http://localhost:3000/devices/<id>
+
+### 4. Checking what's actually stored in the database
+   - podman exec -it unifi-db psql -U poc -d poc -c "select * from devices"
+   - OR
+   - podman exec -it unifi-db psql -U poc -d poc   
+   - Exit psql with \q

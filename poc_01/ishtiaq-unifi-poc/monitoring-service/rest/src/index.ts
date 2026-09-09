@@ -1,3 +1,18 @@
+// ishtiaq-unifi-poc/monitoring-service/rest/src/index.ts
+
+/**
+ *
+ * Service entry point. Wires together:
+ - config, Postgres pool, repository (SQLService), the business-logic layer (MonitoringService),
+ - and the HTTP layer (Express app from createApp), then starts listening.
+
+ Also owns the process lifecycle: refuses to start if the database isn't
+ reachable, and registers a graceful shutdown handler for SIGTERM/SIGINT
+ so the container can be stopped cleanly (e.g. by `docker/podman stop`
+ or an orchestrator) without dropping in-flight requests or leaving the
+ pg pool open.
+  */
+
 import { Pool } from "pg";
 import type { Server } from "http";
 import { loadConfig } from "./config/config";
@@ -13,8 +28,12 @@ export interface RunningService {
 }
 
 export async function start(): Promise<RunningService> {
+
+  // port and databaseUrl
   const config = loadConfig();
 
+  // Persistent pg connection. connectionsString: [host, port, user, and password]
+  // default: postgres://poc:poc@unifi-db:5432/poc
   const pool = new Pool({ connectionString: config.databaseUrl });
   // Fail fast and loudly: a service that starts happily without its
   // database, then reports nothing, is worse than one that refuses to
