@@ -1,8 +1,10 @@
-// monitoring-service/rest/src/http/app.ts
-
 import express, { type NextFunction, type Request, type Response } from "express";
 import { z } from "zod";
-import { DeviceNotFoundError, DuplicateDeviceError, MonitoringService} from "../service/monitoringService";
+import {
+  DeviceNotFoundError,
+  DuplicateDeviceError,
+  MonitoringService,
+} from "../service/monitoringService";
 import type { Logger } from "../domain/logger";
 
 const registerDeviceSchema = z.object({

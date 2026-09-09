@@ -1,5 +1,3 @@
-// monitoring-service/rest/src/domain/logger.ts
-
 export interface Logger {
   info(msg: string, meta?: Record<string, unknown>): void;
   warn(msg: string, meta?: Record<string, unknown>): void;

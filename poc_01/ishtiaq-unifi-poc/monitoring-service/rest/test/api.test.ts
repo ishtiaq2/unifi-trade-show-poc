@@ -1,5 +1,3 @@
-// monitoring-service/rest/test/api.test.ts
-
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import { Pool } from "pg";
@@ -43,7 +41,13 @@ describe("REST API (step 4)", () => {
     expect(res.body).toEqual([]);
   });
 
-  it("registers a device with protocol null — discovery is step 5, not this one", async () => {
+  it("registers a device even when its address is unreachable, protocol stays null", async () => {
+    // "router:4001" resolves to nothing in this test's environment — no
+    // real device is running here. Discovery is expected to fail, and
+    // registration must still succeed with protocol left null rather
+    // than rejecting outright. See test/discovery.test.ts for the
+    // matching case where a real device IS running and discovery
+    // actually succeeds through this same endpoint.
     const res = await request(app)
       .post("/devices")
       .send({ name: "router-1", address: "router:4001" });

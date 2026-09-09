@@ -1,8 +1,7 @@
-// monitoring-service/rest/src/service/monitoringService.ts
-
 import type { SQLService } from "../../../datasource-module/datasource/sql-service";
 import type { Device, Diagnostics } from "../../../datasource-module/domain/types";
 import type { Logger } from "../domain/logger";
+import { discoverProtocol } from "../clients/clientFactory";
 
 export class DeviceNotFoundError extends Error {
   constructor(id: string) {
@@ -19,15 +18,8 @@ export class DuplicateDeviceError extends Error {
 }
 
 /**
- * Step 4 only: registration, queries, removal against real Postgres.
- *
- * Deliberately does NOT attempt capability discovery here, even though
- * a fuller version of this service eventually will. Discovery needs a
- * DeviceClient, which is step 5 — pulling it in now would make this
- * step untestable without also having a working DeviceClient, breaking
- * the "each step independently testable" constraint the roadmap is
- * built around. `protocol` stays null on every device created here;
- * step 5 is exactly the change that starts filling it in.
+ * Registration, queries, removal, and (as of step 5) real capability
+ * discovery against real REST devices.
  */
 export class MonitoringService {
   constructor(
@@ -49,7 +41,19 @@ export class MonitoringService {
   }
 
   /**
-   * Registers a device. `protocol` stays null — see class doc comment.
+   * Registers a device, then attempts capability discovery immediately,
+   * per the brief's "use its health endpoint to get the capabilities".
+   *
+   * If discovery fails, the device is still created — protocol stays
+   * null, exactly as it did before step 5 existed. This is deliberate,
+   * not a gap: at a trade show, gear gets added to the list while it's
+   * still booting or being cabled. Rejecting registration because a
+   * device isn't answering *yet* would make the system most frustrating
+   * exactly when it's being set up. From step 7 on, the poller retries
+   * discovery on a later cycle for any device stuck at protocol: null —
+   * for now, without a poller yet, it stays null until someone re-runs
+   * discovery some other way. That gap is real and will close in step 7,
+   * not before.
    *
    * Rejects a duplicate address rather than silently monitoring the
    * same device twice, which would double its poll traffic later and
@@ -63,12 +67,25 @@ export class MonitoringService {
     if (existing) throw new DuplicateDeviceError(input.address);
 
     const device = await this.sql.createDevice(input);
-    this.log.info("device registered", {
-      deviceId: device.id,
-      deviceName: device.name,
-      address: device.address,
-    });
-    return device;
+
+    try {
+      const { protocol, capabilities } = await discoverProtocol(device.address);
+      await this.sql.setCapabilities(device.id, protocol, capabilities);
+      this.log.info("device registered", {
+        deviceId: device.id,
+        deviceName: device.name,
+        protocol,
+      });
+      return (await this.sql.getDevice(device.id)) ?? device;
+    } catch (err) {
+      this.log.warn("device registered, capability discovery failed", {
+        deviceId: device.id,
+        deviceName: device.name,
+        address: device.address,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return device;
+    }
   }
 
   async removeDevice(id: string): Promise<void> {

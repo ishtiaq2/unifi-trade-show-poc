@@ -1,5 +1,3 @@
-// monitoring-service/rest/src/index.ts
-
 import { Pool } from "pg";
 import type { Server } from "http";
 import { loadConfig } from "./config/config";
