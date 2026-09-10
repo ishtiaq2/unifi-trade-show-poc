@@ -132,7 +132,7 @@ Run, not assumed:
 access in this development environment. Everything the container would
 run was verified by running it directly.
 
-## Next step
+## Step Number 6, State Machine:
 
 Step 6: the state machine — `reachable` / `suspect` / `down`, pure
 logic, no I/O. Genuinely independent of everything built so far; it can
@@ -140,3 +140,6 @@ be written and exhaustively unit-tested without a database, a device,
 or an HTTP server anywhere in the loop. Step 7 is where it gets wired to
 a poller that finally closes the "discovery never retries" gap noted
 above.
+
+* ![state-transitions.svg](../../../../home/ishtiaqh/Downloads/state-machine-integrated/docs/state-transitions.svg)
+* ![steps-covered.svg](../../../../home/ishtiaqh/Downloads/state-machine-integrated/docs/steps-covered.svg)

@@ -59,7 +59,7 @@ tuning it there must not require editing and redeploying code.
 
 | Suite | Tests | Scope |
 |---|---|---|
-| `stateMachine.test.ts` | 8 | Pure functions, no I/O. Highest-stakes logic in the repo |
+| `stateMachine.spec.ts` | 8 | Pure functions, no I/O. Highest-stakes logic in the repo |
 | `api.test.ts` | 9 | HTTP against a real Postgres |
 | `integration.test.ts` | 5 | Real running simulators, both protocols, real sockets |
 | `lifecycle.test.ts` | 4 | The real `src/index.ts` as a subprocess, real SIGTERM shutdown |

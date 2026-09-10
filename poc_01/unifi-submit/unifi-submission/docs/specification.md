@@ -165,7 +165,7 @@ that matter. `down` logs at error, `suspect` at warn, recovery at info.
 
 | Suite | Scope | Why it exists |
 |---|---|---|
-| `stateMachine.test.ts` | pure functions, no I/O | The false-alarm logic is the highest-stakes code here; these run in milliseconds and can be exhaustive |
+| `stateMachine.spec.ts` | pure functions, no I/O | The false-alarm logic is the highest-stakes code here; these run in milliseconds and can be exhaustive |
 | `api.test.ts` | HTTP + real Postgres | Catches malformed queries, wrong column names, constraints that do not behave as assumed — none visible to a mocked repository |
 | `integration.test.ts` | real simulators, both protocols, real sockets | Catches proto loader mismatches, field-casing bugs, timeouts that never fire |
 | `lifecycle.test.ts` | the real entrypoint as a subprocess | Answers `assumptions.md` #1 — proves the wired-together service works, not just its parts |
