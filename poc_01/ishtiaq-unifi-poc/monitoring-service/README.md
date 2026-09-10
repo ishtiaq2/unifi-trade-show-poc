@@ -141,5 +141,5 @@ or an HTTP server anywhere in the loop. Step 7 is where it gets wired to
 a poller that finally closes the "discovery never retries" gap noted
 above.
 
-* ![state-transitions.svg](../../../../home/ishtiaqh/Downloads/state-machine-integrated/docs/state-transitions.svg)
-* ![steps-covered.svg](../../../../home/ishtiaqh/Downloads/state-machine-integrated/docs/steps-covered.svg)
+* ![state-transitions.svg](../docs/step-1-to-6/state-transitions.svg)
+* ![steps-covered.svg](../docs/step-1-to-6/steps-covered.svg)
