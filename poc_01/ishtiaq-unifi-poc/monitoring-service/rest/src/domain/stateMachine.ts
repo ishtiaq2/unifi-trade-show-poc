@@ -31,28 +31,8 @@ export interface TransitionResult {
 }
 
 /**
- * The single piece of logic that answers the brief's "some devices are
- * behind unstable networks... we don't want false alarms."
- *
- * A failure never immediately means "down". Failures accumulate through
- * `suspect` and only reach `down` once they exceed the configured
- * threshold. Any single success resets to `reachable` immediately,
- * from ANY prior state — including straight from `down`.
- *
- * That asymmetry is deliberate, not an oversight: falsely reporting a
- * healthy device as down in front of a customer is far more costly
- * than briefly continuing to show a just-recovered device as
- * `suspect` for one extra check. Failure is treated as a claim that
- * needs evidence, accumulated over multiple checks; recovery is
- * trusted the first time it's seen.
- *
- * Pure function: no clock, no I/O, no database, no network — every
- * input it needs is a parameter, and every output is a return value.
- * This is what makes it possible to test exhaustively in milliseconds,
- * and what makes it "step 6" rather than folded into step 7's poller:
- * the decision logic and the scheduling/retry mechanics are genuinely
- * separable concerns, and keeping them separate means a bug in one
- * can never hide inside a bug in the other.
+ * Failures accumulate to avoid false alarms on unstable networks.
+ * A successful check immediately restores the device to reachable.
  */
 export function transition(input: TransitionInput): TransitionResult {
   const config = input.config ?? DEFAULT_CONFIG;
