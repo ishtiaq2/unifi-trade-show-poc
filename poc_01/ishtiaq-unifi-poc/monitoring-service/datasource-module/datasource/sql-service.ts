@@ -118,6 +118,30 @@ export class SQLService {
     deviceId: string,
     payload: DiagnosticsPayload & { checksum: string | null },
   ): Promise<void> {
+    if (payload.deviceReportedStatus === "ok") {
+      const { rows } = await this.pool.query(
+        `SELECT id, device_reported_status 
+         FROM diagnostics 
+         WHERE device_id = $1 
+         ORDER BY recorded_at DESC 
+         LIMIT 1`,
+        [deviceId]
+      );
+
+      const latest = rows[0];
+
+      if (latest && latest.device_reported_status === "ok") {
+        // MATCH BY ID INSTEAD OF TIMESTAMP
+        await this.pool.query(
+          `UPDATE diagnostics 
+           SET recorded_at = now() 
+           WHERE id = $1`,
+          [latest.id]
+        );
+        return;
+      }
+    }
+
     await this.pool.query(
       `INSERT INTO diagnostics
          (device_id, hw_version, sw_version, fw_version, device_reported_status, checksum)

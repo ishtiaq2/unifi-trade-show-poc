@@ -19,6 +19,7 @@ import { loadConfig } from "./config/config";
 import { logger } from "./domain/logger";
 import { SQLService } from "../../datasource-module/datasource/sql-service";
 import { MonitoringService } from "./service/monitoringService";
+import { Poller } from "./poller/poller";
 import { createApp } from "./http/app";
 
 export interface RunningService {
@@ -42,6 +43,9 @@ export async function start(): Promise<RunningService> {
 
   const sql = new SQLService(pool);
   const service = new MonitoringService(sql, logger);
+  const poller = new Poller(sql, logger);
+  poller.start();
+
   const app = createApp(service, logger);
 
   const server: Server = app.listen(config.port, () => {

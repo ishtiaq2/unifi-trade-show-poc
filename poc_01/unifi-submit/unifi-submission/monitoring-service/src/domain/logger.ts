@@ -7,18 +7,16 @@ export interface Logger {
 }
 
 function emit(level: Level, msg: string, meta?: Record<string, unknown>): void {
-  // Single-line JSON. The brief says this PoC "might become part of
-  // something bigger" — structured logs survive that transition into a
-  // real log aggregator, whereas free-text console.log has to be
-  // rewritten. Hand-rolled rather than pulling in pino/winston: one
-  // function is enough here, and a PoC shouldn't take a dependency it
-  // doesn't need.
-  const line = JSON.stringify({
+  const payload = {
     ts: new Date().toISOString(),
     level,
     msg,
     ...meta,
-  });
+  };
+
+  // Stringify the JSON, then un-escape the ANSI codes so the terminal renders them!
+  const line = JSON.stringify(payload).replace(/\\u001b/g, '\x1b');
+
   if (level === "error") console.error(line);
   else console.log(line);
 }

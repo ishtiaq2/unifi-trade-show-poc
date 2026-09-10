@@ -141,6 +141,51 @@ or an HTTP server anywhere in the loop. Step 7 is where it gets wired to
 a poller that finally closes the "discovery never retries" gap noted
 above.
 
-* ![state-transitions.svg](../docs/step-1-to-6/state-transitions.svg)
-* Module Architecture: ![module-architecture.svg](rest/src/domain/module-architecture.svg)
-* ![steps-covered.svg](../docs/step-1-to-6/steps-covered.svg)
+* ![state-transitions.svg](docs/step-1-to-6/state-transitions.svg)
+* Module Architecture: ![module-architecture.svg](monitoring-service/rest/src/domain/module-architecture.svg)
+* ![steps-covered.svg](docs/step-1-to-6/steps-covered.svg)
+
+## Step Number 7, Poller:
+cd devices && podman-compose up -d 
+cd ../db && podman-compose up -d
+cd ../monitoring-service && podman-compose up -d
+
+[admin@localhost poc_01]$ podman ps
+CONTAINER ID  IMAGE                                   COMMAND               CREATED       STATUS                  PORTS                   NAMES
+091ba51ac2db  localhost/unifi-devices:latest          npx ts-node route...  33 hours ago  Up 14 minutes           0.0.0.0:4001->4001/tcp  devices_router_1
+ffbcdf9d9995  localhost/unifi-devices:latest          npx ts-node switc...  33 hours ago  Up 14 minutes           0.0.0.0:4002->4002/tcp  devices_switch_1
+35b5cbf5499c  localhost/unifi-devices:latest          npx ts-node camer...  33 hours ago  Up 14 minutes           0.0.0.0:4003->4003/tcp  devices_camera-rest_1
+a79224ef777d  localhost/unifi-devices:latest          npx ts-node door-...  33 hours ago  Up 14 minutes           0.0.0.0:4004->4004/tcp  devices_door-access-rest_1
+4cccba1796df  localhost/unifi-devices:latest          npx ts-node camer...  33 hours ago  Up 14 minutes           0.0.0.0:4005->4005/tcp  devices_camera-grpc_1
+81cc330607df  localhost/unifi-devices:latest          npx ts-node door-...  33 hours ago  Up 14 minutes           0.0.0.0:4006->4006/tcp  devices_door-access-grpc_1
+ca920761748e  docker.io/library/postgres:16-alpine    postgres              33 hours ago  Up 2 minutes (healthy)  0.0.0.0:5432->5432/tcp  unifi-db
+d81dc6b0a019  localhost/unifi-monitoring-rest:latest  npx ts-node src/i...  33 hours ago  Up 45 seconds           0.0.0.0:3000->3000/tcp  monitoring-service_rest_1
+
+
+* podman exec -it unifi-db psql -U poc -d poc -c "select * from devices"
+
+admin@localhost poc_01]$ podman exec -it unifi-db psql -U poc -d poc -c "select * from devices"
+id | name | address | protocol | capabilities | status | consecutive_failures | last_checked_at | last_success_at | created_at | updated_at
+----+------+---------+----------+--------------+--------+----------------------+-----------------+-----------------+------------+------------
+(0 rows)
+
+* Register a device so the poller can monitor it:
+
+curl -X POST http://192.168.0.46:3000/devices \
+-H "Content-Type: application/json" \
+-d '{"name":"Lobby Camera", "address":"camera-rest:4003"}'
+
+curl -X POST http://192.168.0.46:3000/devices \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Main Router", "address":"router:4001"}'
+
+curl -X POST http://localhost:3000/devices \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Core Switch", "address":"switch:4002"}'
+
+* podman logs -f monitoring-service_rest_1
+* podman exec -it unifi-db psql -U poc -d poc -c "select * from diagnostics"
+
+podman stop devices_camera-rest_1
+podman start devices_camera-rest_1
+
