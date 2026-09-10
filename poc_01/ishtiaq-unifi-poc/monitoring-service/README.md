@@ -142,4 +142,5 @@ a poller that finally closes the "discovery never retries" gap noted
 above.
 
 * ![state-transitions.svg](../docs/step-1-to-6/state-transitions.svg)
+* Module Architecture: ![module-architecture.svg](rest/src/domain/module-architecture.svg)
 * ![steps-covered.svg](../docs/step-1-to-6/steps-covered.svg)
