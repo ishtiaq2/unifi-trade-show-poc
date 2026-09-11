@@ -141,9 +141,9 @@ or an HTTP server anywhere in the loop. Step 7 is where it gets wired to
 a poller that finally closes the "discovery never retries" gap noted
 above.
 
-* ![state-transitions.svg](docs/step-1-to-6/state-transitions.svg)
+* ![state-transitions.svg](docs/step-1-to-7/state-transitions.svg)
 * Module Architecture: ![module-architecture.svg](monitoring-service/rest/src/domain/module-architecture.svg)
-* ![steps-covered.svg](docs/step-1-to-6/steps-covered.svg)
+* ![steps-covered.svg](docs/step-1-to-7/steps-covered.svg)
 
 ## Step Number 7, Poller:
 cd devices && podman-compose up -d 
