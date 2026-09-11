@@ -9,8 +9,8 @@
 ✅ 3. Service skeleton          config → pool → /healthz → shutdown
 ✅ 4. Repository + REST API      POST/GET/DELETE /devices, tested against real Postgres
 ✅ 5. DeviceClient (REST)        talk to your 4 REST devices for real
-6. State machine              pure logic, unit-tested, no I/O
-7. Poller                     wire 5 + 6 together, add retry/backoff
+✅ 6. State machine              pure logic, unit-tested, no I/O
+✅ 7. Poller                     wire 5 + 6 together, add retry/backoff
 8. gRPC client                same interface, second implementation
 9. ChecksumProvider           the stub seam
 10. Life-cycle test            boot the real entrypoint end to end 

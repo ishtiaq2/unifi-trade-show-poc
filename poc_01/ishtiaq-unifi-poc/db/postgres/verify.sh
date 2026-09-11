@@ -91,7 +91,7 @@ expect_rejected "invalid protocol rejected" \
 expect_rejected "negative failure count rejected" \
                 "INSERT INTO devices (name,address,consecutive_failures) VALUES ('v','verify:4',-1);"
 expect_rejected "diagnostics for unknown device rejected" \
-                "INSERT INTO diagnostics (device_id,hw_version) VALUES ('00000000-0000-0000-0000-000000000000','ghost');"
+                "INSERT INTO diagnostics (device_id,hw_version) VALUES ('00000000-0000-0000-0000-000000000000', true,'ghost');"
 
 echo
 echo "Defaults and behavior:"
@@ -106,8 +106,8 @@ else
   bad "unexpected defaults: status=$status failures=$failures protocol_is_null=$proto_null"
 fi
 
-q "INSERT INTO diagnostics (device_id,hw_version,device_reported_status)
-   SELECT id,'HW-1','degraded' FROM devices WHERE address='verify:1' LIMIT 1;" >/dev/null
+q "INSERT INTO diagnostics (device_id,reachable, hw_version,device_reported_status)
+   SELECT id, true, 'HW-1','degraded' FROM devices WHERE address='verify:1' LIMIT 1;" >/dev/null
 checksum_null=$(q "SELECT checksum IS NULL FROM diagnostics
                    WHERE device_id=(SELECT id FROM devices WHERE address='verify:1' LIMIT 1);")
 [ "$checksum_null" = "t" ] && ok "checksum defaults to NULL (not a fabricated value)" \

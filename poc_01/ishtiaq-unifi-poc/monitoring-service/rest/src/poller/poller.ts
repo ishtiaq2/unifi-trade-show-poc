@@ -1,10 +1,10 @@
 // monitoring-service/rest/src/poller/poller.ts
 
 import type { SQLService } from "../../../datasource-module/datasource/sql-service";
-import type { Device, HealthCheckResult } from "../../../datasource-module/domain/types";
+import type { Device, DiagnosticsPayload, HealthCheckResult } from "../../../datasource-module/domain/types";
 import type { Logger } from "../domain/logger";
 import { clientFor, discoverProtocol } from "../clients/clientFactory";
-import { transition } from "../domain/stateMachine";
+import { transition, DEFAULT_CONFIG, type StateMachineConfig } from "../domain/stateMachine";
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -22,6 +22,12 @@ export class Poller {
     private readonly sql: SQLService,
     private readonly log: Logger,
     private readonly intervalMs = 10_000,
+    // Threshold is a parameter with a default, not a hardcoded constant
+    // buried in the logic — see stateMachine.ts. Reading it from here
+    // (rather than always relying on transition()'s own internal
+    // default) is what makes FAILURE_THRESHOLD in the environment
+    // actually do something.
+    private readonly stateMachineConfig: StateMachineConfig = DEFAULT_CONFIG,
   ) {}
 
   start(): void {
@@ -86,6 +92,7 @@ export class Poller {
       currentStatus: device.status,
       consecutiveFailures: device.consecutiveFailures,
       checkSucceeded: result.ok,
+      config: this.stateMachineConfig,
     });
 
     await this.sql.updateStatus(
@@ -95,21 +102,7 @@ export class Poller {
       result.ok,
     );
 
-    if (result.ok && result.diagnostics) {
-      await this.sql.recordDiagnostics(device.id, {
-        ...result.diagnostics,
-        checksum: null, // Stubbed until Step 9
-      });
-    } else if (!result.ok) {
-      // Device is unreachable, explicitly log the failure event
-      await this.sql.recordDiagnostics(device.id, {
-        hwVersion: null,
-        swVersion: null,
-        fwVersion: null,
-        deviceReportedStatus: "not reachable", // This will trigger an INSERT
-        checksum: null,
-      });
-    }
+    await this.recordDiagnosticsReading(device.id, result.ok, result.diagnostics);
 
     // 1. HUMAN-READABLE COLORED TERMINAL OUTPUT
     console.log(`\n[HEARTBEAT] ${device.name} is ${STATUS_COLORS[newState.status]} (Failures: ${newState.consecutiveFailures})`);
@@ -146,11 +139,67 @@ export class Poller {
         protocol: result.protocol,
       });
     } catch (error) {
-      this.log.info("device discovery pending", {
+      // Still can't even tell what this device is. That's a "not
+      // reachable" fact worth the same treatment as a failed health
+      // check further down — recorded and deduplicated the same way,
+      // not silently dropped.
+      this.log.warn("device discovery pending", {
         deviceId: device.id,
         error: String(error),
       });
+      await this.recordDiagnosticsReading(device.id, false);
     }
+  }
+
+  /**
+   * Implements the dedup-and-preserve rule for diagnostics history:
+   *
+   *   - A reading identical in KIND to the latest stored row (same
+   *     reachable + same device_reported_status) only bumps that row's
+   *     timestamp. A device sitting at "reachable, ok" for an hour of
+   *     ten-second polls produces ONE row, not 360 of them — and the
+   *     SAME collapsing applies to a device stuck down: a whole outage
+   *     is one row with an advancing timestamp, not one row per cycle.
+   *   - Any change — including recovery — inserts a genuinely NEW row.
+   *     Critically, this means an outage row is never later touched or
+   *     overwritten by the recovery that follows it: once written, it
+   *     stays in the table permanently, regardless of what the device
+   *     does afterward. That permanence is the actual point.
+   *
+   * A failed check has no device data at all, so hw/sw/fw/reported
+   * status are stored as null for those rows — never a poller-invented
+   * value like a "not reachable" string in device_reported_status,
+   * which would silently blur the device's-own-claim column with this
+   * service's own conclusions. The row's existence and its timestamp
+   * ARE the information; `reachable: false` says everything that can
+   * honestly be said.
+   */
+  private async recordDiagnosticsReading(
+    deviceId: string,
+    reachable: boolean,
+    diagnostics?: DiagnosticsPayload,
+  ): Promise<void> {
+    const newDeviceReportedStatus = reachable ? diagnostics?.deviceReportedStatus ?? null : null;
+
+    const latest = await this.sql.latestDiagnostics(deviceId);
+    const sameAsBefore =
+      latest !== null &&
+      latest.reachable === reachable &&
+      latest.deviceReportedStatus === newDeviceReportedStatus;
+
+    if (sameAsBefore) {
+      await this.sql.touchLatestDiagnostics(deviceId);
+      return;
+    }
+
+    await this.sql.recordDiagnostics(deviceId, {
+      reachable,
+      hwVersion: reachable ? diagnostics?.hwVersion ?? null : null,
+      swVersion: reachable ? diagnostics?.swVersion ?? null : null,
+      fwVersion: reachable ? diagnostics?.fwVersion ?? null : null,
+      deviceReportedStatus: newDeviceReportedStatus,
+      checksum: null, // Stubbed until Step 9 — honest null, never fabricated
+    });
   }
 
   private scheduleNext(delayMs: number): void {

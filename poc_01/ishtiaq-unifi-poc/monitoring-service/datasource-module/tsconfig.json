@@ -1,0 +1,16 @@
+// monitoring-service/datasource-module/tsconfig.json
+
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true
+  },
+  "ts-node": { "transpileOnly": true },
+  "include": ["datasource", "domain"]
+}

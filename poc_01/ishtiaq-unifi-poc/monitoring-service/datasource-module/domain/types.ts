@@ -23,6 +23,13 @@ export interface DiagnosticsPayload {
 }
 
 export interface Diagnostics extends DiagnosticsPayload {
+  /**
+   * Whether THIS reading came from a successful check. False means a
+   * failed check that produced no data — the row still exists to mark
+   * that the failure happened, deduplicated and preserved the same way
+   * successful readings are. See poller.ts for the dedup decision.
+   */
+  reachable: boolean;
   checksum: string | null;
   recordedAt: Date;
 }

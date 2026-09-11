@@ -1,3 +1,10 @@
+# In one go: 
+cd db
+podman-compose down -v   # -v is what actually removes the schema/data
+podman-compose up -d
+./postgres/verify.sh
+
+
 # Database Module
 
 Postgres and its schema, self-contained. Runs on its own — no

@@ -11,7 +11,7 @@
  so the container can be stopped cleanly (e.g. by `docker/podman stop`
  or an orchestrator) without dropping in-flight requests or leaving the
  pg pool open.
-  */
+ */
 
 import { Pool } from "pg";
 import type { Server } from "http";
@@ -43,7 +43,9 @@ export async function start(): Promise<RunningService> {
 
   const sql = new SQLService(pool);
   const service = new MonitoringService(sql, logger);
-  const poller = new Poller(sql, logger);
+  const poller = new Poller(sql, logger, config.pollIntervalMs, {
+    failureThreshold: config.failureThreshold,
+  });
   poller.start();
 
   const app = createApp(service, logger);
@@ -57,6 +59,7 @@ export async function start(): Promise<RunningService> {
     if (shuttingDown) return;
     shuttingDown = true;
     logger.info("shutting down");
+    poller.stop();
     await new Promise<void>((resolve) => server.close(() => resolve()));
     await pool.end();
     logger.info("shutdown complete");

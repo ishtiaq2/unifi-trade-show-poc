@@ -1,3 +1,5 @@
+-- db/postgres/init.sql
+
 -- Schema for the device monitoring PoC.
 --
 -- Applied automatically on first start by docker-compose (mounted into
@@ -58,6 +60,19 @@ CREATE TABLE diagnostics (
   -- with no way to interpret them.
   device_id               uuid NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
 
+  -- Whether THIS SPECIFIC CHECK succeeded. Distinct from devices.status
+  -- (the state machine's considered verdict, requiring accumulated
+  -- evidence). This is the raw per-check fact, and it's what makes
+  -- deduplication possible: comparing (reachable, device_reported_status)
+  -- against the latest row tells the poller whether a reading is "the
+  -- same kind of result as last time" (touch the timestamp) or "a real
+  -- change" (insert a new row, permanently, even across a later
+  -- recovery).
+  reachable               boolean NOT NULL,
+
+  -- NULL when reachable = false: a failed check has no device data to
+  -- report. The row still exists — it marks THAT a failure happened,
+  -- even though it can't say what the device's own state was.
   hw_version              text,
   sw_version              text,
   fw_version              text,
@@ -66,6 +81,14 @@ CREATE TABLE diagnostics (
   -- A device can answer every request perfectly while reporting an
   -- internal fault. Collapsing these two into one column would lose
   -- exactly the information an operator wants, unrecoverably.
+  --
+  -- NEVER a poller-invented value (e.g. NOT "not reachable" when a
+  -- check fails) — that would make this column mean two different
+  -- things depending on who wrote it, and silently break the
+  -- device-vs-service distinction this schema exists to preserve. NULL
+  -- when reachable = false, for the same reason as the version columns
+  -- above: the device didn't say anything, so nothing is recorded on
+  -- its behalf.
   device_reported_status  text,
 
   -- NULL until the external checksum binary is available. Deliberately

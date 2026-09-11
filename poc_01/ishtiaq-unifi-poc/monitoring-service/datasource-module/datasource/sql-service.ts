@@ -116,38 +116,15 @@ export class SQLService {
 
   async recordDiagnostics(
     deviceId: string,
-    payload: DiagnosticsPayload & { checksum: string | null },
+    payload: DiagnosticsPayload & { checksum: string | null; reachable: boolean },
   ): Promise<void> {
-    if (payload.deviceReportedStatus === "ok") {
-      const { rows } = await this.pool.query(
-        `SELECT id, device_reported_status 
-         FROM diagnostics 
-         WHERE device_id = $1 
-         ORDER BY recorded_at DESC 
-         LIMIT 1`,
-        [deviceId]
-      );
-
-      const latest = rows[0];
-
-      if (latest && latest.device_reported_status === "ok") {
-        // MATCH BY ID INSTEAD OF TIMESTAMP
-        await this.pool.query(
-          `UPDATE diagnostics 
-           SET recorded_at = now() 
-           WHERE id = $1`,
-          [latest.id]
-        );
-        return;
-      }
-    }
-
     await this.pool.query(
       `INSERT INTO diagnostics
-         (device_id, hw_version, sw_version, fw_version, device_reported_status, checksum)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+         (device_id, reachable, hw_version, sw_version, fw_version, device_reported_status, checksum)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         deviceId,
+        payload.reachable,
         payload.hwVersion,
         payload.swVersion,
         payload.fwVersion,
@@ -157,9 +134,37 @@ export class SQLService {
     );
   }
 
+  /**
+   * Bumps `recorded_at` on the most recent diagnostics row for this
+   * device, without touching anything else — used when a new reading is
+   * the same kind of result as the last one, so routine repeated checks
+   * don't create a fresh row every single cycle.
+   *
+   * Returns false if there's no existing row to touch, so the caller
+   * knows to `recordDiagnostics` (insert) instead. The decision of
+   * WHICH to call belongs to the poller, not here — this method and
+   * `recordDiagnostics` are both simple, single-purpose writes. Keeping
+   * the comparison logic out of this file matches the rest of this
+   * class: it maps rows to types, it doesn't decide what a reading
+   * means.
+   */
+  async touchLatestDiagnostics(deviceId: string): Promise<boolean> {
+    const { rowCount } = await this.pool.query(
+      `UPDATE diagnostics SET recorded_at = now()
+       WHERE id = (
+         SELECT id FROM diagnostics
+         WHERE device_id = $1
+         ORDER BY recorded_at DESC
+         LIMIT 1
+       )`,
+      [deviceId],
+    );
+    return (rowCount ?? 0) > 0;
+  }
+
   async latestDiagnostics(deviceId: string): Promise<Diagnostics | null> {
     const { rows } = await this.pool.query(
-      `SELECT hw_version, sw_version, fw_version, device_reported_status, checksum, recorded_at
+      `SELECT reachable, hw_version, sw_version, fw_version, device_reported_status, checksum, recorded_at
        FROM diagnostics
        WHERE device_id = $1
        ORDER BY recorded_at DESC
@@ -169,6 +174,7 @@ export class SQLService {
     if (!rows[0]) return null;
     const r = rows[0];
     return {
+      reachable: r.reachable,
       hwVersion: r.hw_version,
       swVersion: r.sw_version,
       fwVersion: r.fw_version,

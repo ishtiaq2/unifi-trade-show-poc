@@ -33,6 +33,14 @@ function assert(condition: boolean, description: string): void {
   console.log(`  ok  ${description}`);
 }
 
+async function countDiagnostics(deviceId: string): Promise<number> {
+  const { rows } = await pool.query(
+    "SELECT count(*)::int AS n FROM diagnostics WHERE device_id = $1",
+    [deviceId],
+  );
+  return rows[0].n;
+}
+
 async function runTests(): Promise<void> {
   const sql = new SQLService(pool);
 
@@ -87,6 +95,7 @@ async function runTests(): Promise<void> {
 
   console.log("\n--- 5. Recording diagnostics ---");
   await sql.recordDiagnostics(device.id, {
+    reachable: true,
     hwVersion: "HW-1.0",
     swVersion: "SW-2.1",
     fwVersion: "FW-3.0",
@@ -94,6 +103,7 @@ async function runTests(): Promise<void> {
     checksum: null, // the real production value until the binary exists
   });
   const first = await sql.latestDiagnostics(device.id);
+  assert(first?.reachable === true, "reachable stored as true for a successful check");
   assert(first?.hwVersion === "HW-1.0", "diagnostics round-trip hwVersion");
   assert(first?.deviceReportedStatus === "ok", "device-reported status stored");
   assert(first?.checksum === null, "null checksum stored as null, not faked");
@@ -102,6 +112,7 @@ async function runTests(): Promise<void> {
   // that latestDiagnostics really returns the newest row rather than
   // whichever one the database happened to return first.
   await sql.recordDiagnostics(device.id, {
+    reachable: true,
     hwVersion: "HW-1.0",
     swVersion: "SW-2.2",
     fwVersion: "FW-3.1",
@@ -119,7 +130,73 @@ async function runTests(): Promise<void> {
   );
   assert(latest?.checksum === "abc123", "checksum round-trips when present");
 
-  console.log("\n--- 6. Deleting, and cascade ---");
+  console.log("\n--- 6. Deduplication: touchLatestDiagnostics ---");
+  const beforeTouchCount = await countDiagnostics(device.id);
+  const touched = await sql.touchLatestDiagnostics(device.id);
+  assert(touched === true, "touchLatestDiagnostics reports success when a row exists");
+  const afterTouchCount = await countDiagnostics(device.id);
+  assert(
+    afterTouchCount === beforeTouchCount,
+    "touching does NOT create a new row — this is the whole point of dedup",
+  );
+  const afterTouch = await sql.latestDiagnostics(device.id);
+  assert(
+    afterTouch!.recordedAt.getTime() > latest!.recordedAt.getTime(),
+    "recorded_at advanced even though nothing else changed",
+  );
+  assert(
+    afterTouch?.deviceReportedStatus === "degraded",
+    "touching did not alter the row's actual data, only its timestamp",
+  );
+
+  console.log("\n--- 7. A failed check: reachable=false, no device data ---");
+  const beforeFailCount = await countDiagnostics(device.id);
+  await sql.recordDiagnostics(device.id, {
+    reachable: false,
+    hwVersion: null,
+    swVersion: null,
+    fwVersion: null,
+    deviceReportedStatus: null,
+    checksum: null,
+  });
+  const afterFail = await sql.latestDiagnostics(device.id);
+  assert(afterFail?.reachable === false, "a failed check is stored as reachable=false");
+  assert(afterFail?.hwVersion === null, "no device data for a failed check");
+  assert(
+    afterFail?.deviceReportedStatus === null,
+    "device_reported_status is null on failure — NEVER a poller-invented sentinel string",
+  );
+  const afterFailCount = await countDiagnostics(device.id);
+  assert(
+    afterFailCount === beforeFailCount + 1,
+    "a failed check gets its OWN new row, distinct from the prior ok row — never merged into it",
+  );
+
+  console.log("\n--- 8. Recovery does not erase the outage row ---");
+  const beforeRecoveryCount = await countDiagnostics(device.id);
+  await sql.recordDiagnostics(device.id, {
+    reachable: true,
+    hwVersion: "HW-1.0",
+    swVersion: "SW-2.2",
+    fwVersion: "FW-3.1",
+    deviceReportedStatus: "ok",
+    checksum: null,
+  });
+  const afterRecoveryCount = await countDiagnostics(device.id);
+  assert(
+    afterRecoveryCount === beforeRecoveryCount + 1,
+    "recovery inserts a NEW row rather than overwriting the failure row",
+  );
+  const { rows: unreachableRows } = await pool.query(
+    "SELECT count(*)::int AS n FROM diagnostics WHERE device_id = $1 AND reachable = false",
+    [device.id],
+  );
+  assert(
+    unreachableRows[0].n === 1,
+    "the reachable=false row from step 7 is STILL in the table after recovery — this is the actual requirement being tested",
+  );
+
+  console.log("\n--- 9. Deleting, and cascade ---");
   const deleted = await sql.deleteDevice(device.id);
   assert(deleted === true, "deleteDevice reports success");
   assert((await sql.getDevice(device.id)) === null, "device is gone");
