@@ -1,7 +1,27 @@
-import type { Protocol } from "../../../datasource-module/domain/types";
-import type { DeviceClient } from "./DeviceClient";
+import type { HealthCheckResult, Protocol } from "../../../datasource-module/domain/types";
 import { RestDeviceClient } from "./RestDeviceClient";
 import { GrpcDeviceClient } from "./GrpcDeviceClient";
+
+export interface Capabilities {
+  protocol: Protocol;
+  capabilities: string[];
+  deviceName: string;
+}
+
+/**
+ * Lets the service talk to a device without knowing whether it's REST
+ * or gRPC.
+ *
+ * Note the deliberate asymmetry: discoverCapabilities THROWS on
+ * failure (registration can't proceed without knowing what a device
+ * is), while checkHealth returns `{ ok: false }` instead. An
+ * unreachable device is a routine outcome for a health check, and
+ * pushing that through catch blocks in the poller would be wrong.
+ */
+export interface DeviceClient {
+  discoverCapabilities(address: string): Promise<Capabilities>;
+  checkHealth(address: string): Promise<HealthCheckResult>;
+}
 
 const restClient = new RestDeviceClient();
 const grpcClient = new GrpcDeviceClient();
@@ -16,24 +36,15 @@ export function clientFor(protocol: Protocol): DeviceClient {
 }
 
 /**
- * Used before a device's protocol is known, per the brief's "use its
- * health endpoint to get the capabilities".
+ * Used before a device's protocol is known.
  *
- * Tries REST first, then falls back to gRPC. The order is arbitrary
- * but not meaningless: REST is tried first only because it's the
- * cheaper failure — an HTTP request to a gRPC port fails fast on a
- * protocol mismatch, whereas the reverse can sit waiting for the
- * deadline. Nothing depends on the order being REST-first; it just
- * makes the common case slightly faster.
+ * REST is tried first only because it's the cheaper failure: an HTTP
+ * request to a gRPC port fails fast, whereas the reverse waits for the
+ * deadline. Nothing depends on the order.
  *
- * A device that answers NEITHER throws, and the caller decides what
- * that means:
- *   - registerDevice (rest) catches it and creates the device anyway
- *     with protocol null, so gear can be added while still booting.
- *   - the poller catches it and records a reachable:false reading,
- *     then retries discovery on the next cycle.
- * Both behaviors predate this change and are unaffected by it — which
- * is the point of discovery having been a separate function all along.
+ * Throws if a device answers neither. Callers decide what that means —
+ * registerDevice creates the device anyway with protocol null (gear
+ * gets added while still booting), and the poller retries next cycle.
  */
 export async function discoverProtocol(
   address: string,

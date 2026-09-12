@@ -1,5 +1,5 @@
 import type { HealthCheckResult } from "../../../datasource-module/domain/types";
-import type { Capabilities, DeviceClient } from "./DeviceClient";
+import type { Capabilities, DeviceClient } from "./clientFactory";
 
 /**
  * Per-request timeout. Kept short and explicit rather than relying on

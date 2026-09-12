@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { writeFileSync, chmodSync, mkdtempSync } from "fs";
 import { tmpdir } from "os";
 import path from "path";
-import { StubChecksumProvider } from "../src/checksum/StubChecksumProvider";
-import { BinaryChecksumProvider } from "../src/checksum/BinaryChecksumProvider";
-import { createChecksumProvider } from "../src/checksum/checksumFactory";
+import {
+  StubChecksumProvider,
+  BinaryChecksumProvider,
+  createChecksumProvider,
+} from "../../../../../../home/ishtiaqh/Downloads/simplified/monitoring-service/rest/src/checksum";
 import { silentLogger } from "../src/domain/logger";
 import { loadConfig } from "../src/config/config";
 import type { DiagnosticsPayload } from "../../datasource-module/domain/types";

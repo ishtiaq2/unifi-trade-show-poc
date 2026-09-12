@@ -1,7 +1,7 @@
 ## Most Urgent
 1. Authentication and Authorization
 2. RBAC
-3. Check that fw, sw, hw changes are reported
+3. Check that fw, sw, hw changes are reported when changed
 4. Should a not reachable device be dropped until not re-added by admin.
  
 ## To Discuss

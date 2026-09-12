@@ -5,8 +5,7 @@ import type { Device, DiagnosticsPayload, HealthCheckResult } from "../../../dat
 import type { Logger } from "../domain/logger";
 import { clientFor, discoverProtocol } from "../clients/clientFactory";
 import { transition, DEFAULT_CONFIG, type StateMachineConfig } from "../domain/stateMachine";
-import type { ChecksumProvider } from "../checksum/ChecksumProvider";
-import { StubChecksumProvider } from "../checksum/StubChecksumProvider";
+import { type ChecksumProvider, StubChecksumProvider } from "../checksum/checksum";
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 

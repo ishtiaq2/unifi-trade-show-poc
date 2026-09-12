@@ -2,7 +2,7 @@ import path from "path";
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import type { HealthCheckResult } from "../../../datasource-module/domain/types";
-import type { Capabilities, DeviceClient } from "./DeviceClient";
+import type { Capabilities, DeviceClient } from "./clientFactory";
 
 /**
  * Per-request deadline, matching RestDeviceClient's timeout. gRPC

@@ -21,7 +21,7 @@ import { SQLService } from "../../datasource-module/datasource/sql-service";
 import { MonitoringService } from "./service/monitoringService";
 import { Poller } from "./poller/poller";
 import { createApp } from "./http/app";
-import { createChecksumProvider } from "./checksum/checksumFactory";
+import { createChecksumProvider } from "./checksum/checksum";
 import { closeClients } from "./clients/clientFactory";
 
 export interface RunningService {
