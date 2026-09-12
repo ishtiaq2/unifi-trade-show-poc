@@ -1,7 +1,7 @@
 import type { Protocol } from "../../../datasource-module/domain/types";
 import type { DeviceClient } from "./DeviceClient";
 import { RestDeviceClient } from "./RestDeviceClient";
-import { GrpcDeviceClient } from "../../../../../../../home/ishtiaqh/Downloads/step8-grpc-client/monitoring-service/rest/src/clients/GrpcDeviceClient";
+import { GrpcDeviceClient } from "./GrpcDeviceClient";
 
 const restClient = new RestDeviceClient();
 const grpcClient = new GrpcDeviceClient();

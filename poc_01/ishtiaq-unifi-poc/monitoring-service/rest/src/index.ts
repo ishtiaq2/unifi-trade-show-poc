@@ -21,7 +21,7 @@ import { SQLService } from "../../datasource-module/datasource/sql-service";
 import { MonitoringService } from "./service/monitoringService";
 import { Poller } from "./poller/poller";
 import { createApp } from "./http/app";
-import { closeClients } from "../../../../../../home/ishtiaqh/Downloads/step8-grpc-client/monitoring-service/rest/src/clients/clientFactory";
+import { closeClients } from "./clients/clientFactory";
 
 export interface RunningService {
   server: Server;

@@ -2,9 +2,10 @@
 # Full destructive teardown, rebuild, and end-to-end verification —
 # the pre-submission gate. Wipes all containers and the database
 # volume, rebuilds everything from scratch, and proves the assembled
-# system actually works: devices respond, the API discovers and
-# registers them, the poller runs, and diagnostics deduplicate
-# correctly (the step 7 fix).
+# system actually works: REST and gRPC devices both respond, the API
+# discovers and registers them over both protocols, the poller runs,
+# and diagnostics deduplicate correctly (the step 7 fix) regardless of
+# which protocol produced the reading.
 #
 # This is destructive — never point it at a live/demo deployment.
 # For that, use scripts/health-check.sh instead, which only reads.
@@ -27,9 +28,35 @@ step "Full Teardown: Stopping containers and removing DB volume"
 (cd devices && podman-compose down >/dev/null 2>&1) || true
 (cd db && podman-compose down -v >/dev/null 2>&1) || true
 info "Pruning orphaned containers and removing custom images to force clean build..."
+# `podman ps -aq` (used in an earlier version of this cleanup) does NOT
+# see buildah "working containers" — temporary artifacts from a
+# `--build` that got interrupted (a closed terminal, a killed process,
+# a crash mid-build) rather than completing normally. These are
+# invisible to podman's normal container listing; `--external` is
+# required to see them at all. Confirmed on a real machine: a dangling
+# image survived every previous version of this cleanup because two
+# such containers (literally named after the dangling image's own ID)
+# were holding a reference that only `--external` reveals.
+podman ps --external -aq | xargs -r podman rm -f >/dev/null 2>&1 || true
+podman ps -aq | xargs -r podman rm -f >/dev/null 2>&1 || true
+podman pod ps -q | xargs -r podman pod rm -f >/dev/null 2>&1 || true
 podman container prune -f >/dev/null 2>&1 || true
-podman rmi localhost/unifi-monitoring-rest localhost/unifi-devices >/dev/null 2>&1 || true
-success "Environment wiped clean."
+podman rmi -f localhost/unifi-monitoring-rest localhost/unifi-devices >/dev/null 2>&1 || true
+podman image prune -f >/dev/null 2>&1 || true
+
+# Confirm the cleanup actually worked instead of assuming it did — this
+# exact gap (script claims success, a dangling image survives anyway)
+# is what prompted this whole block to be rewritten twice already.
+REMAINING_DANGLING=$(podman images -f dangling=true -q | wc -l | tr -d ' ')
+REMAINING_EXTERNAL=$(podman ps --external -aq | wc -l | tr -d ' ')
+if [ "$REMAINING_DANGLING" -gt 0 ] || [ "$REMAINING_EXTERNAL" -gt 0 ]; then
+  info "WARNING: $REMAINING_DANGLING dangling image(s), $REMAINING_EXTERNAL external container(s) still present."
+  info "Run 'podman rmi <id>' on a dangling image and read the error — it names exactly what's still holding it."
+  podman images -f dangling=true
+  podman ps --external -a
+else
+  success "Environment wiped clean — confirmed no dangling images or leftover build containers remain."
+fi
 
 if [ "$NONINTERACTIVE" = false ]; then
   info "PAUSED. Open another terminal to manually run 'podman ps -a', 'podman images', and 'podman volume ls'."
@@ -89,6 +116,19 @@ for port in 4001 4002 4003 4004; do
   done
 done
 
+# The 2 gRPC devices (4005, 4006) started in the same `podman-compose
+# up` above, but can't be curled — HTTP/2 + protobuf, not plain HTTP.
+# No separate readiness probe for them: they're checked properly below,
+# by actually registering them through the real API, which is a
+# stronger proof of readiness than a bash-side port check would be
+# anyway (it exercises the real gRPC client, not just "is a socket
+# open"). An earlier version of this script attempted a bash-native
+# TCP check here (`/dev/tcp`) — dropped after finding it silently
+# fails depending on exactly how the script gets invoked (`sh
+# script.sh` vs `./script.sh`), which is worse than not checking at
+# all: a check that can silently lie is worse than no check.
+info "gRPC devices (4005, 4006) started — verified below via real registration, not curl."
+
 # ==========================================
 # 4. Monitoring Service
 # ==========================================
@@ -102,7 +142,7 @@ success "Monitoring API (port 3000) is healthy."
 # ==========================================
 # 5. Live End-to-End Verification
 # ==========================================
-step "Registering REST devices with Monitoring Service"
+step "Registering devices (REST and gRPC) with Monitoring Service"
 # Checks the actual HTTP status of each registration — the original
 # version discarded curl's output entirely, so a 409 (already
 # registered, e.g. from a re-run without a full teardown) or a 500
@@ -126,6 +166,8 @@ register_device "router-1" "router:4001"
 register_device "switch-1" "switch:4002"
 register_device "camera-rest-1" "camera-rest:4003"
 register_device "door-access-rest-1" "door-access-rest:4004"
+register_device "camera-grpc-1" "camera-grpc:4005"
+register_device "door-access-grpc-1" "door-access-grpc:4006"
 
 # POLL_INTERVAL_MS defaults to 10000 (see rest/src/config/config.ts) and
 # isn't overridden in monitoring-service/docker-compose.yml as of this
@@ -141,6 +183,27 @@ if echo "$DEVICES_JSON" | grep -q '"status":"reachable"'; then
   success "Devices successfully discovered and marked reachable by poller."
 else
   fail "Poller did not mark devices reachable. Check logs: 'podman logs monitoring-service_rest_1'"
+fi
+
+# Registration alone doesn't prove gRPC actually works — REST discovery
+# is tried first (see clientFactory.ts's discoverProtocol) and only
+# falls back to gRPC when REST fails, so a bug that made gRPC discovery
+# silently no-op could still leave the device registered successfully,
+# just stuck with protocol:null. This check confirms the fallback
+# genuinely ran and genuinely succeeded, for both gRPC devices.
+#
+# Queried from Postgres directly, not grepped from the JSON response:
+# each device's JSON has "protocol" appearing TWICE — once at the top
+# level and once nested inside "capabilities" — so a naive
+# `grep -o '"protocol":"grpc"' | wc -l` silently double-counts every
+# device. Found by actually running it and getting 4 instead of 2, not
+# by inspection. The database has no such ambiguity.
+GRPC_REACHABLE_COUNT=$(podman exec unifi-db psql -U poc -d poc -t -A -c \
+  "SELECT count(*) FROM devices WHERE protocol = 'grpc';")
+if [ "$GRPC_REACHABLE_COUNT" -eq 2 ]; then
+  success "Both gRPC devices resolved protocol='grpc' (step 8 verified end to end)."
+else
+  fail "Expected 2 devices with protocol='grpc', found $GRPC_REACHABLE_COUNT. Check logs: 'podman logs monitoring-service_rest_1'"
 fi
 
 # ==========================================
