@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ts-node datasource/__tests__/test-postgres.ts"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,7 @@
   "devDependencies": {
     "@types/node": "^26.5.0",
     "@types/pg": "^8.23.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
 }

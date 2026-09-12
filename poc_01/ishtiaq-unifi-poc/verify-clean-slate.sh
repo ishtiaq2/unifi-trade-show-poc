@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
+# Full destructive teardown, rebuild, and end-to-end verification —
+# the pre-submission gate. Wipes all containers and the database
+# volume, rebuilds everything from scratch, and proves the assembled
+# system actually works: devices respond, the API discovers and
+# registers them, the poller runs, and diagnostics deduplicate
+# correctly (the step 7 fix).
+#
+# This is destructive — never point it at a live/demo deployment.
+# For that, use scripts/health-check.sh instead, which only reads.
+#
+#   ./verify-clean-slate.sh          interactive (pauses after teardown)
+#   ./verify-clean-slate.sh --yes    non-interactive, for CI/scripting
 
-# Exit immediately if a command exits with a non-zero status
 set -e
+cd "$(dirname "${BASH_SOURCE[0]}")"
+source scripts/lib.sh
 
-# ==========================================
-# Colors for Terminal Output
-# ==========================================
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Helper functions for logging
-step() { echo -e "\n${BLUE}==> [STEP] $1${NC}"; }
-info() { echo -e "${YELLOW}    $1${NC}"; }
-success() { echo -e "${GREEN}    ✔ $1${NC}"; }
-fail() { echo -e "${RED}    ✖ $1${NC}"; exit 1; }
+NONINTERACTIVE=false
+[ "${1:-}" = "--yes" ] && NONINTERACTIVE=true
 
 # ==========================================
 # 0. Full Teardown
@@ -30,8 +31,10 @@ podman container prune -f >/dev/null 2>&1 || true
 podman rmi localhost/unifi-monitoring-rest localhost/unifi-devices >/dev/null 2>&1 || true
 success "Environment wiped clean."
 
-info "PAUSED. Open another terminal to manually run 'podman ps -a', 'podman images', and 'podman volume ls'."
-read -p "Press [Enter] to continue creating the environment..."
+if [ "$NONINTERACTIVE" = false ]; then
+  info "PAUSED. Open another terminal to manually run 'podman ps -a', 'podman images', and 'podman volume ls'."
+  read -p "Press [Enter] to continue creating the environment..."
+fi
 
 # ==========================================
 # 1. Shared Network
@@ -91,27 +94,47 @@ done
 # ==========================================
 step "Starting Monitoring Service"
 (cd monitoring-service && podman-compose up -d --build)
-info "Waiting 5 seconds for Monitoring Service to boot..."
-sleep 5
+info "Waiting for the monitoring service to become healthy..."
+wait_for "monitoring service" 15 1 curl -sf http://localhost:3000/healthz
 
-if curl -s http://localhost:3000/healthz | grep -q 'ok'; then
-  success "Monitoring API (port 3000) is healthy."
-else
-  fail "Monitoring API is down."
-fi
+success "Monitoring API (port 3000) is healthy."
 
 # ==========================================
 # 5. Live End-to-End Verification
 # ==========================================
 step "Registering REST devices with Monitoring Service"
-curl -s -X POST http://localhost:3000/devices -H "Content-Type: application/json" -d '{"name":"router-1","address":"router:4001"}' > /dev/null
-curl -s -X POST http://localhost:3000/devices -H "Content-Type: application/json" -d '{"name":"switch-1","address":"switch:4002"}' > /dev/null
-curl -s -X POST http://localhost:3000/devices -H "Content-Type: application/json" -d '{"name":"camera-rest-1","address":"camera-rest:4003"}' > /dev/null
-curl -s -X POST http://localhost:3000/devices -H "Content-Type: application/json" -d '{"name":"door-access-rest-1","address":"door-access-rest:4004"}' > /dev/null
-success "4 REST devices registered."
+# Checks the actual HTTP status of each registration — the original
+# version discarded curl's output entirely, so a 409 (already
+# registered, e.g. from a re-run without a full teardown) or a 500
+# would have been silently reported as success. 201 is a fresh
+# registration; 409 is fine too here since it means the device is
+# already known — either way the device ends up registered, which is
+# what this check actually cares about.
+register_device() {
+  local name="$1" address="$2"
+  local status
+  status=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:3000/devices \
+    -H "Content-Type: application/json" \
+    -d "{\"name\":\"$name\",\"address\":\"$address\"}")
+  case "$status" in
+    201) success "$name registered (201)" ;;
+    409) info "$name already registered (409) — fine, continuing" ;;
+    *) fail "$name registration failed (HTTP $status)" ;;
+  esac
+}
+register_device "router-1" "router:4001"
+register_device "switch-1" "switch:4002"
+register_device "camera-rest-1" "camera-rest:4003"
+register_device "door-access-rest-1" "door-access-rest:4004"
 
-info "Waiting 12 seconds for the first Poller cycle to complete..."
-sleep 12
+# POLL_INTERVAL_MS defaults to 10000 (see rest/src/config/config.ts) and
+# isn't overridden in monitoring-service/docker-compose.yml as of this
+# writing. If that ever changes, override here to match rather than
+# letting this wait silently fall out of sync:
+POLL_INTERVAL_MS="${POLL_INTERVAL_MS:-10000}"
+WAIT_S=$(( POLL_INTERVAL_MS / 1000 + 2 ))  # +2s safety margin
+info "Waiting ${WAIT_S}s for the first Poller cycle to complete (POLL_INTERVAL_MS=$POLL_INTERVAL_MS)..."
+sleep "$WAIT_S"
 
 DEVICES_JSON=$(curl -s http://localhost:3000/devices)
 if echo "$DEVICES_JSON" | grep -q '"status":"reachable"'; then
@@ -124,20 +147,30 @@ fi
 # 6. Database Deduplication Test
 # ==========================================
 step "Verifying Time-Series Deduplication"
-DB_QUERY="SELECT count(*) FROM diagnostics;"
-INITIAL_COUNT=$(podman exec unifi-db psql -U poc -d poc -t -A -c "$DB_QUERY")
-info "Initial diagnostic row count: $INITIAL_COUNT"
+COUNT_QUERY="SELECT count(*) FROM diagnostics;"
+LATEST_QUERY="SELECT max(recorded_at) FROM diagnostics;"
 
-info "Waiting 12 seconds for another Poller cycle to occur..."
-sleep 12
+INITIAL_COUNT=$(podman exec unifi-db psql -U poc -d poc -t -A -c "$COUNT_QUERY")
+INITIAL_LATEST=$(podman exec unifi-db psql -U poc -d poc -t -A -c "$LATEST_QUERY")
+info "Initial diagnostic row count: $INITIAL_COUNT (latest recorded_at: $INITIAL_LATEST)"
 
-FINAL_COUNT=$(podman exec unifi-db psql -U poc -d poc -t -A -c "$DB_QUERY")
-info "Final diagnostic row count: $FINAL_COUNT"
+info "Waiting ${WAIT_S}s for another Poller cycle to occur..."
+sleep "$WAIT_S"
 
-if [ "$INITIAL_COUNT" -eq "$FINAL_COUNT" ]; then
-    success "Deduplication is working! Row count stayed at $FINAL_COUNT across multiple poll cycles."
-else
+FINAL_COUNT=$(podman exec unifi-db psql -U poc -d poc -t -A -c "$COUNT_QUERY")
+FINAL_LATEST=$(podman exec unifi-db psql -U poc -d poc -t -A -c "$LATEST_QUERY")
+info "Final diagnostic row count: $FINAL_COUNT (latest recorded_at: $FINAL_LATEST)"
+
+# Two checks, not one: the row count staying flat is the dedup fix
+# working, BUT a poller that silently stopped running would show the
+# same flat count for the wrong reason. Confirming recorded_at actually
+# advanced proves the poller is still active, not just quiet.
+if [ "$INITIAL_COUNT" -ne "$FINAL_COUNT" ]; then
     fail "Deduplication failed! Row count grew from $INITIAL_COUNT to $FINAL_COUNT."
+elif [ "$INITIAL_LATEST" = "$FINAL_LATEST" ]; then
+    fail "Row count stayed flat, but recorded_at never advanced — the poller may have stopped running, not deduplicated correctly. Check: podman logs monitoring-service_rest_1"
+else
+    success "Deduplication is working! Row count stayed at $FINAL_COUNT while recorded_at kept advancing — the poller is active and correctly touching rows instead of inserting new ones."
 fi
 
 echo -e "\n${GREEN}==========================================${NC}"
