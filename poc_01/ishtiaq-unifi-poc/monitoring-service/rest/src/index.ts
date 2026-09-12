@@ -21,6 +21,7 @@ import { SQLService } from "../../datasource-module/datasource/sql-service";
 import { MonitoringService } from "./service/monitoringService";
 import { Poller } from "./poller/poller";
 import { createApp } from "./http/app";
+import { createChecksumProvider } from "./checksum/checksumFactory";
 import { closeClients } from "./clients/clientFactory";
 
 export interface RunningService {
@@ -44,9 +45,14 @@ export async function start(): Promise<RunningService> {
 
   const sql = new SQLService(pool);
   const service = new MonitoringService(sql, logger);
-  const poller = new Poller(sql, logger, config.pollIntervalMs, {
-    failureThreshold: config.failureThreshold,
-  });
+  const checksumProvider = createChecksumProvider(config.checksumBinaryPath, logger);
+  const poller = new Poller(
+    sql,
+    logger,
+    config.pollIntervalMs,
+    { failureThreshold: config.failureThreshold },
+    checksumProvider,
+  );
   poller.start();
 
   const app = createApp(service, logger);

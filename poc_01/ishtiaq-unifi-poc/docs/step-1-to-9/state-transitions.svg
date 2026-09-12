@@ -1,0 +1,58 @@
+<svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#742a2a"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2f855a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="760" height="400" fill="white"/>
+
+  <text x="380" y="28" text-anchor="middle" font-size="16" font-weight="bold">
+    transition() — rest/src/domain/stateMachine.ts
+  </text>
+
+  <!-- reachable's own self-loop for repeated success -->
+  <path d="M 75,65 C 55,20 130,15 130,60" fill="none" stroke="#2f855a" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="105" y="12" text-anchor="middle" font-size="12" fill="#2f855a">checkSucceeded: true</text>
+
+  <!-- top failure path: reachable -> suspect -> down -->
+  <line x1="165" y1="120" x2="335" y2="120" stroke="#742a2a" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <text x="250" y="108" text-anchor="middle" font-size="12.5" fill="#742a2a">checkSucceeded: false</text>
+  <text x="250" y="97" text-anchor="middle" font-size="11" fill="#742a2a">(consecutiveFailures: 0 &#8594; 1)</text>
+
+  <line x1="465" y1="120" x2="600" y2="120" stroke="#742a2a" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <text x="532" y="98" text-anchor="middle" font-size="12.5" fill="#742a2a">checkSucceeded: false</text>
+  <text x="532" y="112" text-anchor="middle" font-size="11" fill="#742a2a">failures reach threshold</text>
+
+  <!-- suspect self-loop: repeated failures under threshold -->
+  <path d="M 430,160 C 480,210 440,245 400,210" fill="none" stroke="#742a2a" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <text x="497" y="235" text-anchor="middle" font-size="12" fill="#742a2a">checkSucceeded: false,</text>
+  <text x="497" y="250" text-anchor="middle" font-size="12" fill="#742a2a">still under threshold</text>
+
+  <!-- recovery: suspect -> reachable, inner curve -->
+  <path d="M 385,170 C 320,260 220,260 145,165" fill="none" stroke="#2f855a" stroke-width="2.5" marker-end="url(#arrowGreen)"/>
+  <text x="265" y="280" text-anchor="middle" font-size="13" fill="#2f855a" font-weight="bold">checkSucceeded: true</text>
+
+  <!-- recovery: down -> reachable, outer curve -->
+  <path d="M 655,170 C 640,350 160,350 140,168" fill="none" stroke="#2f855a" stroke-width="2.5" marker-end="url(#arrowGreen)"/>
+  <text x="400" y="368" text-anchor="middle" font-size="13" fill="#2f855a" font-weight="bold">checkSucceeded: true — even from here, immediately</text>
+
+  <!-- nodes -->
+  <circle cx="100" cy="120" r="65" fill="#c6f6d5" stroke="#22543d" stroke-width="1.5"/>
+  <text x="100" y="122" text-anchor="middle" font-size="16" font-weight="bold">reachable</text>
+  <text x="100" y="140" text-anchor="middle" font-size="10">consecutiveFailures: 0</text>
+
+  <circle cx="400" cy="120" r="65" fill="#fefcbf" stroke="#744210" stroke-width="1.5"/>
+  <text x="400" y="122" text-anchor="middle" font-size="16" font-weight="bold">suspect</text>
+  <text x="400" y="140" text-anchor="middle" font-size="10">1 &#8804; failures &lt; threshold</text>
+
+  <circle cx="665" cy="120" r="65" fill="#fed7d7" stroke="#742a2a" stroke-width="1.5"/>
+  <text x="665" y="122" text-anchor="middle" font-size="16" font-weight="bold">down</text>
+  <text x="665" y="140" text-anchor="middle" font-size="10">failures &#8805; threshold</text>
+
+  <text x="380" y="392" text-anchor="middle" font-size="11.5" font-style="italic" fill="#555">
+    Failure needs evidence (3 defaults to reach down) — recovery is trusted on sight (1 success, from anywhere).
+  </text>
+</svg>

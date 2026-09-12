@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "REST API for the device monitoring PoC — step 4",
   "directories": {
-    "test": "../../../../../home/ishtiaqh/Downloads/step8-grpc-client/monitoring-service/rest/test"
+    "test": "test"
   },
   "scripts": {
-    "dev": "ts-node ../../../../../home/ishtiaqh/Downloads/step8-grpc-client/monitoring-service/rest/src/index.ts",
-    "test": "vitest run",
+    "dev": "ts-node src/index.ts",
+    "test": "./run-tests.sh",
+    "test:fast": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "license": "ISC",

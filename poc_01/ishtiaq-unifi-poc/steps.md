@@ -12,8 +12,8 @@
 ✅ 6. State machine              pure logic, unit-tested, no I/O
 ✅ 7. Poller                     wire 5 + 6 together, add retry/backoff
 ✅ 8. gRPC client                same interface, second implementation
-9. ChecksumProvider           the stub seam
-10. Life-cycle test            boot the real entrypoint end to end 
+✅ 9. ChecksumProvider           the stub seam
+✅ 10. Life-cycle test            boot the real entrypoint end to end 
 
 ## 1. Create Devices
 ### How to make all 6 devices up and running

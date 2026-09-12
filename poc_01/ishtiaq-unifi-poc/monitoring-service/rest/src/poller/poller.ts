@@ -5,6 +5,8 @@ import type { Device, DiagnosticsPayload, HealthCheckResult } from "../../../dat
 import type { Logger } from "../domain/logger";
 import { clientFor, discoverProtocol } from "../clients/clientFactory";
 import { transition, DEFAULT_CONFIG, type StateMachineConfig } from "../domain/stateMachine";
+import type { ChecksumProvider } from "../checksum/ChecksumProvider";
+import { StubChecksumProvider } from "../checksum/StubChecksumProvider";
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -28,6 +30,10 @@ export class Poller {
     // default) is what makes FAILURE_THRESHOLD in the environment
     // actually do something.
     private readonly stateMachineConfig: StateMachineConfig = DEFAULT_CONFIG,
+    // Defaults to the stub so existing callers (and tests) don't have
+    // to care — the stub is the honest current behavior, not a
+    // placeholder that hides a missing dependency.
+    private readonly checksumProvider: ChecksumProvider = new StubChecksumProvider(),
   ) {}
 
   start(): void {
@@ -192,13 +198,29 @@ export class Poller {
       return;
     }
 
+    // Only computed for a successful check: a failed check has no
+    // diagnostics payload to checksum in the first place. Asking the
+    // provider to checksum nothing would be meaningless, and on the
+    // binary implementation would mean spawning a process per failed
+    // poll cycle for no possible result.
+    //
+    // Deliberately computed AFTER the dedup decision above, not
+    // before: a deduplicated reading doesn't insert a row, so a
+    // checksum computed for it would be discarded. With the stub
+    // that's merely wasteful; with the real binary it would mean
+    // spawning a process on every poll cycle of every stable device
+    // and throwing the result away.
+    const checksum = reachable && diagnostics
+      ? await this.checksumProvider.computeChecksum(deviceId, diagnostics)
+      : null;
+
     await this.sql.recordDiagnostics(deviceId, {
       reachable,
       hwVersion: reachable ? diagnostics?.hwVersion ?? null : null,
       swVersion: reachable ? diagnostics?.swVersion ?? null : null,
       fwVersion: reachable ? diagnostics?.fwVersion ?? null : null,
       deviceReportedStatus: newDeviceReportedStatus,
-      checksum: null, // Stubbed until Step 9 — honest null, never fabricated
+      checksum,
     });
   }
 

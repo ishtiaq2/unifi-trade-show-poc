@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { spawn, type ChildProcess } from "child_process";
 import path from "path";
-import { GrpcDeviceClient } from "../../../../../../home/ishtiaqh/Downloads/step8-grpc-client/monitoring-service/rest/src/clients/GrpcDeviceClient";
-import { discoverProtocol, clientFor } from "../../../../../../home/ishtiaqh/Downloads/step8-grpc-client/monitoring-service/rest/src/clients/clientFactory";
+import { GrpcDeviceClient } from "../src/clients/GrpcDeviceClient";
+import { discoverProtocol, clientFor } from "../src/clients/clientFactory";
 
 /**
  * Runs against REAL gRPC device simulators over real sockets — real

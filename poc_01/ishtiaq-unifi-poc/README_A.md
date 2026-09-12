@@ -80,7 +80,7 @@ setup while it's live — everything else in `scripts/` rebuilds things.
 **Automated test suites directly**, if you're iterating on one module:
 ```bash
 cd monitoring-service/datasource-module && npm test   # 36 checks
-cd monitoring-service/rest && npm test                 # 48 tests
+cd monitoring-service/rest && npm test                 # 71 tests
 ```
 (`rest`'s suite needs `TEST_DATABASE_URL` set and real devices running
 — see [`scripts/test-rest.sh`](scripts/test-rest.sh) for the exact
@@ -88,19 +88,18 @@ setup it does automatically.)
 
 ## Architecture
 
-![architecture.svg](docs/step-1-to-8/architecture.svg)
+![architecture.svg](docs/step-1-to-10/architecture.svg)
 
 Green is done and verified; gray dashed is not built yet. See
-[`docs/step-1-to-8/`](docs/step-1-to-8/) for the state machine's
+[`docs/step-1-to-10/`](docs/step-1-to-10/) for the state machine's
 transition diagram and further detail.
 
 ## Progress
 
 See [`steps.md`](steps.md) for the authoritative, up-to-date checklist.
-As of this writing: steps 1–8 complete and verified against real
+As of this writing: all 10 steps complete and verified against real
 infrastructure (not mocks) throughout — real Postgres, real device
-processes, real HTTP and gRPC calls. Steps 9–10 (checksum provider,
-full life-cycle test) remain.
+processes, real HTTP and gRPC calls. Nothing outstanding on the roadmap.
 
 ## Documentation index
 
@@ -111,5 +110,7 @@ full life-cycle test) remain.
 | [`devices/README.md`](devices/README.md) | The 6 simulators, how to run them individually |
 | [`monitoring-service/rest/src/poller/README.md`](monitoring-service/rest/src/poller/README.md) | Poller design: retry/backoff, dedup, discovery-recovery |
 | [`monitoring-service/rest/src/clients/README.md`](monitoring-service/rest/src/clients/README.md) | REST and gRPC device clients, the keepCase trap, proto duplication |
+| [`monitoring-service/rest/src/checksum/README.md`](monitoring-service/rest/src/checksum/README.md) | The checksum seam, and why the stub returns null instead of a fake hash |
+| [`monitoring-service/rest/test/LIFECYCLE_TEST.md`](monitoring-service/rest/test/LIFECYCLE_TEST.md) | The life-cycle test, and why the exit code is null |
 | [`monitoring-service/rest/src/SERVICE_LIFECYCLE.md`](monitoring-service/rest/src/SERVICE_LIFECYCLE.md) | Startup, shutdown, config |
 | [`dev-and-troubleshoot/`](dev-and-troubleshoot/) | Working notes, real bugs found and fixed, troubleshooting history |
