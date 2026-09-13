@@ -181,3 +181,19 @@ body {
 .empty-actions { margin-bottom: 16px; }
 .hint-text { font-size: 0.8rem; color: var(--text-sub); line-height: 1.4; }
 .hint-text code { color: var(--accent-blue); }
+
+.btn-sm {
+  padding: 3px 8px;
+  font-size: 0.75rem;
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.4);
+  color: #fff;
+}

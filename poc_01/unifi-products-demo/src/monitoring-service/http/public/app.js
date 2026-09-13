@@ -136,11 +136,36 @@ function renderDeviceList(devices) {
       </div>
       <div class="device-details">
         <span>Address: <code>${dev.address}</code></span>
-        <span class="protocol-tag">${(dev.protocol || 'unverified').toUpperCase()}</span>
+        <button class="btn btn-danger btn-sm" onclick="handleDeleteDevice('${dev.id}', '${dev.name}', event)">Remove</button>
       </div>
     </div>
   `).join('');
 }
+
+async function handleDeleteDevice(id, name, event) {
+  // Prevent opening the telemetry panel when clicking the delete button
+  if (event) event.stopPropagation();
+
+  if (!confirm(`Are you sure you want to remove '${name}'?`)) return;
+
+  try {
+    const res = await fetch(`/devices/${id}`, { method: "DELETE" });
+    if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`);
+
+    // Clear inspector if the deleted device was selected
+    if (selectedDeviceId === id) {
+      selectedDeviceId = null;
+      document.getElementById("telemetry-inspector").innerHTML = `
+        <p class="placeholder">Select a device on the left to inspect real-time hardware telemetry.</p>
+      `;
+    }
+
+    fetchDevices();
+  } catch (err) {
+    alert(`Failed to remove device: ${err.message}`);
+  }
+}
+
 
 // Initial fetch & set poll loop every 3 seconds
 fetchDevices();
