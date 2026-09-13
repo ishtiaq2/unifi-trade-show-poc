@@ -213,6 +213,9 @@ step "Verifying Time-Series Deduplication"
 COUNT_QUERY="SELECT count(*) FROM diagnostics;"
 LATEST_QUERY="SELECT max(recorded_at) FROM diagnostics;"
 
+COUNT_QUERY="SELECT count(*) FROM diagnostics dg JOIN devices d ON d.id = dg.device_id WHERE d.name = 'router-1';"
+LATEST_QUERY="SELECT max(recorded_at) FROM diagnostics dg JOIN devices d ON d.id = dg.device_id WHERE d.name = 'router-1';"
+
 INITIAL_COUNT=$(podman exec unifi-db psql -U poc -d poc -t -A -c "$COUNT_QUERY")
 INITIAL_LATEST=$(podman exec unifi-db psql -U poc -d poc -t -A -c "$LATEST_QUERY")
 info "Initial diagnostic row count: $INITIAL_COUNT (latest recorded_at: $INITIAL_LATEST)"
