@@ -11,7 +11,7 @@
 import type { DeviceProfile } from "../../shared/types";
 
 const camera: DeviceProfile = {
-  name: "unifi-camera-rest-1",
+  name: "unifi-camera-rest",
   hwVersion: "UNIFI-CAM-HW-1",
   swVersion: "1.0.0",
   fwVersion: "FW-1.0.0",

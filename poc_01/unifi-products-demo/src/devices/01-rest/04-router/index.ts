@@ -1,4 +1,4 @@
-import { startRestDevice } from "../_shared/start-rest";
+import { startRestDevice } from "../common/start-rest";
 import unifi_router from "./profile";
 
 startRestDevice(unifi_router);
