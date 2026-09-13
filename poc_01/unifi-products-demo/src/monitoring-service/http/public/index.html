@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniFi Device Monitoring System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="dashboard-container">
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <h1>UniFi Device Monitoring System</h1>
+        <p>Real-Time Multi-Protocol Telemetry Dashboard</p>
+      </div>
+    </div>
+    <div class="live-indicator">
+      <span class="pulse"></span>
+      <span id="last-updated">Polling API every 3s...</span>
+    </div>
+  </header>
+
+  <div id="error-banner" class="error-banner hidden"></div>
+
+  <main class="main-grid">
+    <!-- Device List Panel -->
+    <!-- Device List Panel -->
+    <section class="card-panel">
+      <div class="panel-header">
+        <h2>Registered Devices (<span id="device-count">0</span>)</h2>
+        <div class="panel-actions">
+          <button class="btn btn-primary" onclick="toggleAddForm()">+ Add Single</button>
+        </div>
+      </div>
+
+      <!-- Inline Form to Add a Single Device -->
+      <form id="add-device-form" class="add-form hidden" onsubmit="handleRegisterSingle(event)">
+        <h3>Register New Device</h3>
+        <div class="form-inputs">
+          <input type="text" id="new-dev-name" placeholder="Name (e.g. router-1)" required />
+          <input type="text" id="new-dev-address" placeholder="Address (e.g. router:4001)" required />
+        </div>
+        <div class="form-buttons">
+          <button type="submit" class="btn btn-success">Save Device</button>
+          <button type="button" class="btn btn-secondary" onclick="toggleAddForm()">Cancel</button>
+        </div>
+      </form>
+
+      <div id="device-list" class="device-list">
+        <p class="placeholder">Loading telemetry service...</p>
+      </div>
+    </section>
+
+    <!-- Telemetry Inspector Panel -->
+    <section class="card-panel">
+      <h2>Deep Telemetry Inspector</h2>
+      <div id="telemetry-inspector">
+        <p class="placeholder">Select a device on the left to inspect real-time hardware telemetry.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

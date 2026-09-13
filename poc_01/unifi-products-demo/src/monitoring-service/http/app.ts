@@ -8,6 +8,7 @@ import {
   MonitoringService,
 } from "../service/monitoringService";
 import type { Logger } from "../logging/logger";
+import path from "path";
 
 const registerDeviceSchema = z.object({
   name: z.string().min(1),
@@ -17,6 +18,9 @@ const registerDeviceSchema = z.object({
 export function createApp(service: MonitoringService, log: Logger) {
   const app = express();
   app.use(express.json());
+
+  // Serve static UI assets from http/public/ directory
+  app.use(express.static(path.join(__dirname, "public")));
 
   // --- VERBOSE HTTP LOGGER MUST GO FIRST ---
   app.use((req, res, next) => {

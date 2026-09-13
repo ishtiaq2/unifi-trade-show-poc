@@ -201,3 +201,9 @@ curl -X DELETE http://localhost:3000/devices/<UUID_OF_DOOR_GRPC>
 1. Show dedup by running cd src && ./_03_check-dedup.sh
 2. Reset: podman restart devices_door-access-rest_1
 3. Check again: ./_03_check-dedup.sh
+
+
+## Access the UI
+./_02_start-trade-show.sh.
+Register active devices using ./_05_auto_register_devices.sh.
+Open http://localhost:3000 directly in any browser.
