@@ -1,4 +1,4 @@
-// unifi-products-demo/src/monitoring-service/datasource-module/domain/types.ts
+// unifi-products-demo/src/monitoring-service/datasource-module/models/types.ts
 export type Protocol = 'rest' | 'grpc';
 export type DeviceStatus = 'reachable' | 'suspect' | 'down';
 

@@ -7,7 +7,7 @@ import type {
   Diagnostics,
   DiagnosticsPayload,
   Protocol,
-} from "../domain/types";
+} from "../models/types";
 
 interface DeviceRow {
   id: string;
@@ -41,7 +41,7 @@ function toDevice(row: DeviceRow): Device {
  * whoever picks this up next, and a layer of indirection over SQL that
  * is already simple enough to read directly.
  *
- * snake_case in the database, camelCase in the domain — the mapping is
+ * snake_case in the database, camelCase in the models — the mapping is
  * confined to this file so nothing above it deals with column names.
  */
 export class SQLService {

@@ -12,5 +12,7 @@
     "noEmit": true
   },
   "ts-node": { "transpileOnly": true },
-  "include": ["datasource", "domain"]
+  "include": ["datasource",
+    "models"
+  ]
 }
