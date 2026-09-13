@@ -1,4 +1,4 @@
-import type { HealthCheckResult } from "../../../datasource-module/domain/types";
+import type { HealthCheckResult } from "../datasource-module/models/types";
 import type { Capabilities, DeviceClient } from "./clientFactory";
 
 /**

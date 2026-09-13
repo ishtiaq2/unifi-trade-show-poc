@@ -1,5 +1,4 @@
 // unifi-products-demo/src/monitoring-service/tsconfig.json
-
 {
   "compilerOptions": {
     "target": "ES2022",
@@ -11,6 +10,20 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true
   },
-  "ts-node": { "transpileOnly": true },
-  "include": ["src", "test"]
+  "ts-node": {
+    "transpileOnly": true
+  },
+  "include": [
+    "index.ts",
+    "clients",
+    "config",
+    "checksum",
+    "domain",
+    "http",
+    "logging",
+    "poller",
+    "service",
+    "datasource-module",
+    "test"
+  ]
 }

@@ -1,14 +1,14 @@
 {
   "name": "unifi-monitoring-rest",
   "version": "1.0.0",
-  "description": "REST API for the device monitoring PoC — step 4",
+  "description": "REST API for the device monitoring PoC \u2014 step 4",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "dev": "ts-node src/index.ts",
-    "test": "./run-tests.sh",
-    "test:fast": "vitest run",
+    "dev": "ts-node index.ts",
+    "test": "vitest run --no-file-parallelism",
+    "test:fast": "vitest run --no-file-parallelism",
     "typecheck": "tsc --noEmit"
   },
   "license": "ISC",

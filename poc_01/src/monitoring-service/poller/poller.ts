@@ -1,8 +1,8 @@
 // monitoring-service/rest/src/poller/poller.ts
 
-import type { SQLService } from "../../../datasource-module/datasource/sql-service";
-import type { Device, DiagnosticsPayload, HealthCheckResult } from "../../../datasource-module/domain/types";
-import type { Logger } from "../domain/logger";
+import type { SQLService } from "../datasource-module/datasource/sql-service";
+import type { Device, DiagnosticsPayload, HealthCheckResult } from "../datasource-module/models/types";
+import type { Logger } from "../logging/logger";
 import { clientFor, discoverProtocol } from "../clients/clientFactory";
 import { transition, DEFAULT_CONFIG, type StateMachineConfig } from "../domain/stateMachine";
 import { type ChecksumProvider, StubChecksumProvider } from "../checksum/checksum";

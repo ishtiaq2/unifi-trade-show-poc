@@ -68,3 +68,38 @@ unifi-products-demo/src/monitoring-service/http/__test__/test-api-layer.sh
 
 # The Automated E2E Verification Script:
 unifi-products-demo/src/monitoring-service/http/__test__/test-api-layer.sh
+
+
+---
+
+
+# UniFi Device Monitoring – Trade Show Demo Guide
+
+Welcome to the live demonstration of the UniFi Device Monitoring Proof of Concept. 
+This environment showcases a highly resilient, multi-protocol microservices architecture designed to monitor fleet hardware in real-time.
+
+## 🎯 What This Demo Proves
+1. **Multi-Protocol Discovery:** Seamlessly registers and communicates with both legacy REST devices and modern gRPC hardware.
+2. **Smart Database Deduplication:** The background poller actively monitors device health but only writes a new database row when a device's state actually changes, massively saving storage.
+3. **State Machine Resilience:** Automatically detects flaky devices, transitioning them through `reachable` → `suspect` → `down` without false alarms.
+4. **Isolated Sandboxing:** A zero-interference testing architecture that allows rigorous integration testing without corrupting live production data.
+
+
+## 🚀 The Main Event: Running the Live Fleet Demo
+**Execution:**
+```bash
+cd unifi-products-demo/src
+./test-final-demo.sh
+
+
+
+
+
+
+
+
+
+
+
+
+

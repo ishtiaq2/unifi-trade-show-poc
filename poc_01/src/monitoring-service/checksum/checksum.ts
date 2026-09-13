@@ -1,7 +1,7 @@
 import { execFile } from "child_process";
 import { promisify } from "util";
-import type { DiagnosticsPayload } from "../../../datasource-module/domain/types";
-import type { Logger } from "../domain/logger";
+import type { DiagnosticsPayload } from "../datasource-module/models/types";
+import type { Logger } from "../logging/logger";
 
 const execFileAsync = promisify(execFile);
 

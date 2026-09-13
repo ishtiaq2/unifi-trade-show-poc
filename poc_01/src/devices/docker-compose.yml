@@ -44,14 +44,14 @@ services:
   camera-grpc:
     image: unifi-devices
     # Assuming your gRPC folder structure mirrors your REST one
-    command: npx ts-node 02-grpc/camera-grpc/index.ts
+    command: npx ts-node 02-grpc/01-camera/index.ts
     ports: ["4005:4005"]
     networks:
       - unifi-net
 
   door-access-grpc:
     image: unifi-devices
-    command: npx ts-node 02-grpc/door-access-grpc/index.ts
+    command: npx ts-node 02-grpc/02-door-access/index.ts
     ports: ["4006:4006"]
     networks:
       - unifi-net

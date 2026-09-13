@@ -1,6 +1,6 @@
 // monitoring-service/rest/src/domain/stateMachine.ts
 
-import type { DeviceStatus } from "../../../datasource-module/domain/types";
+import type { DeviceStatus } from "../datasource-module/models/types";
 
 export interface StateMachineConfig {
   /** Consecutive failed checks before a device is declared down. */

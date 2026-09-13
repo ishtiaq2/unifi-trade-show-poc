@@ -1,7 +1,7 @@
 import path from "path";
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
-import type { HealthCheckResult } from "../../../datasource-module/domain/types";
+import type { HealthCheckResult } from "../datasource-module/models/types";
 import type { Capabilities, DeviceClient } from "./clientFactory";
 
 /**
@@ -9,38 +9,24 @@ import type { Capabilities, DeviceClient } from "./clientFactory";
  * deadlines are absolute timestamps, not durations — hence
  * `Date.now() + REQUEST_TIMEOUT_MS` at each call site rather than
  * passing the constant directly.
- *
- * Worth knowing: a deadline bounds how long THIS CLIENT waits, not how
- * long the server works. A call that exceeds it fails here with
- * DEADLINE_EXCEEDED while the server may still be processing it.
  */
 const REQUEST_TIMEOUT_MS = 2_000;
 
 /**
- * The contract lives at devices/_shared/device.proto, but this is a
- * verbatim copy inside rest/ on purpose: Docker cannot COPY from
- * outside a build context, and rest's context is monitoring-service/,
- * which doesn't contain devices/. A symlink would break in the image
- * for the same reason.
+ * Channel options passed to every gRPC client.
  *
- * Two copies of a contract is a real (if small) duplication risk — if
- * the .proto ever changes, both must change. The alternative (a shared
- * package, or a build step that copies it in) is more machinery than a
- * PoC with one fixed contract warrants. Noted here rather than left to
- * be discovered.
+ * Adding `grpc.connect-timeout_ms: 2000` ensures that when an address is
+ * completely unreachable (or DNS fails to resolve during test execution),
+ * the connection attempt fails fast in 2 seconds rather than lingering in
+ * the gRPC backoff loop for up to 30 seconds.
  */
+const CHANNEL_OPTIONS: grpc.ChannelOptions = {
+  "grpc.connect-timeout_ms": REQUEST_TIMEOUT_MS,
+  "grpc.max_receive_message_length": 1024 * 1024 * 10,
+};
+
 const PROTO_PATH = path.join(__dirname, "proto", "device.proto");
 
-/**
- * keepCase: false — MUST match devices/_shared/grpc-simulator.ts.
- *
- * This is the single most dangerous setting in this file. If the two
- * sides disagree, the data still arrives correctly on the wire, but
- * field names don't match what the reading side expects, so every
- * field reads `undefined` — with NO error, NO exception, and NO crash.
- * The symptom would be diagnostics silently full of nulls, which looks
- * exactly like a device not reporting anything.
- */
 const loaderOptions: protoLoader.Options = {
   keepCase: false,
   longs: String,
@@ -64,11 +50,6 @@ interface DiagnosticsResponse {
 
 let cachedProto: any = null;
 
-/**
- * Loaded once and cached: parsing the .proto on every health check
- * would be wasted work on every poll cycle, for a file that cannot
- * change while the process is running.
- */
 function loadDeviceProto(): any {
   if (!cachedProto) {
     const packageDefinition = protoLoader.loadSync(PROTO_PATH, loaderOptions);
@@ -89,19 +70,18 @@ function unaryCall<T>(client: any, method: string): Promise<T> {
 }
 
 export class GrpcDeviceClient implements DeviceClient {
-  /**
-   * One channel per address, reused across calls. grpc-js channels are
-   * designed to be long-lived and handle reconnection internally —
-   * building a new one per health check would discard that and add
-   * connection setup to every single poll cycle.
-   */
   private channels = new Map<string, any>();
 
   private clientFor(address: string): any {
     let client = this.channels.get(address);
     if (!client) {
       const proto = loadDeviceProto();
-      client = new proto.DeviceService(address, grpc.credentials.createInsecure());
+      // Pass CHANNEL_OPTIONS to enforce connection deadlines and channel rules
+      client = new proto.DeviceService(
+        address,
+        grpc.credentials.createInsecure(),
+        CHANNEL_OPTIONS,
+      );
       this.channels.set(address, client);
     }
     return client;
@@ -120,8 +100,6 @@ export class GrpcDeviceClient implements DeviceClient {
     try {
       const client = this.clientFor(address);
 
-      // GetHealth first, mirroring RestDeviceClient: if a device can't
-      // even report what it is, there's no point asking for details.
       await unaryCall<HealthResponse>(client, "getHealth");
       const diag = await unaryCall<DiagnosticsResponse>(client, "getDiagnostics");
 
@@ -131,31 +109,14 @@ export class GrpcDeviceClient implements DeviceClient {
           hwVersion: diag.hwVersion ?? null,
           swVersion: diag.swVersion ?? null,
           fwVersion: diag.fwVersion ?? null,
-          // The device's own claim about itself, named `status` on the
-          // wire — renamed here so it's never confused with this
-          // service's derived Device.status. Same mapping
-          // RestDeviceClient does, deliberately: both protocols must
-          // produce identical domain objects, or the layers above
-          // would have to know which protocol they're dealing with.
           deviceReportedStatus: diag.status ?? null,
         },
       };
     } catch {
-      // UNAVAILABLE, DEADLINE_EXCEEDED, a closed channel — all are
-      // simply "the check did not succeed". Never throws for an
-      // unreachable device: that's a routine outcome the poller
-      // handles, not an exception. Identical contract to
-      // RestDeviceClient.checkHealth.
       return { ok: false };
     }
   }
 
-  /**
-   * Closes every open channel. Without this, grpc-js keeps its event
-   * loop handles alive and the process won't exit cleanly on SIGTERM —
-   * the same class of bug as the poller not being stopped in
-   * shutdown(), which was a real, verified problem in step 7.
-   */
   close(): void {
     for (const client of this.channels.values()) {
       client.close?.();

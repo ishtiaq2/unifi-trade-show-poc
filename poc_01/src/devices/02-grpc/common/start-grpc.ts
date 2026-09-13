@@ -1,6 +1,6 @@
 import * as grpc from "@grpc/grpc-js";
 import { createGrpcDevice } from "./grpc-simulator";
-import { resolvePort, type DeviceProfile } from "./types";
+import { resolvePort, type DeviceProfile } from "../../shared/types";
 
 /**
  * Starts a gRPC device simulator. Binds to 0.0.0.0 rather than localhost

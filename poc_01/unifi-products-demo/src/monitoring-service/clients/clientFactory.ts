@@ -1,4 +1,4 @@
-import type { HealthCheckResult, Protocol } from "../../../datasource-module/domain/types";
+import type { HealthCheckResult, Protocol } from "../datasource-module/models/types";
 import { RestDeviceClient } from "./RestDeviceClient";
 import { GrpcDeviceClient } from "./GrpcDeviceClient";
 
