@@ -6,7 +6,7 @@ import {
   StubChecksumProvider,
   BinaryChecksumProvider,
   createChecksumProvider,
-} from "../../../../../../home/ishtiaqh/Downloads/simplified/monitoring-service/rest/src/checksum";
+} from "../src/checksum/checksum";
 import { silentLogger } from "../src/domain/logger";
 import { loadConfig } from "../src/config/config";
 import type { DiagnosticsPayload } from "../../datasource-module/domain/types";
