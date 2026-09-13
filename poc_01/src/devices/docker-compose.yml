@@ -1,0 +1,61 @@
+## unifi-products-demo/src/devices/docker-compose.yml
+
+# Runs all 6 device simulators found in this folder — one image, built
+# once, with each service selecting which device to start via `command`.
+#
+#   docker compose build       # build the shared image once
+#   docker compose up          # all 6, foreground
+#   docker compose up -d       # all 6, background
+#   docker compose up router   # just one
+#
+# Every service shares the same `image:` tag on purpose. Without it,
+# Requires the network to exist first: podman network create unifi-net
+
+services:
+  router:
+    build: .
+    image: unifi-devices
+    command: npx ts-node 01-rest/04-router/index.ts
+    ports: ["4001:4001"]
+    networks:
+      - unifi-net
+
+  switch:
+    image: unifi-devices
+    command: npx ts-node 01-rest/03-switch/index.ts
+    ports: ["4002:4002"]
+    networks:
+      - unifi-net
+
+  camera-rest:
+    image: unifi-devices
+    command: npx ts-node 01-rest/01-camera/index.ts
+    ports: ["4003:4003"]
+    networks:
+      - unifi-net
+
+  door-access-rest:
+    image: unifi-devices
+    command: npx ts-node 01-rest/02-door-access/index.ts
+    ports: ["4004:4004"]
+    networks:
+      - unifi-net
+
+  camera-grpc:
+    image: unifi-devices
+    # Assuming your gRPC folder structure mirrors your REST one
+    command: npx ts-node 02-grpc/camera-grpc/index.ts
+    ports: ["4005:4005"]
+    networks:
+      - unifi-net
+
+  door-access-grpc:
+    image: unifi-devices
+    command: npx ts-node 02-grpc/door-access-grpc/index.ts
+    ports: ["4006:4006"]
+    networks:
+      - unifi-net
+
+networks:
+  unifi-net:
+    external: true

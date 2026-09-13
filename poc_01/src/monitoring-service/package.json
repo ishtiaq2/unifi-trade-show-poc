@@ -1,0 +1,32 @@
+{
+  "name": "unifi-monitoring-rest",
+  "version": "1.0.0",
+  "description": "REST API for the device monitoring PoC — step 4",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "test": "./run-tests.sh",
+    "test:fast": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.4",
+    "@grpc/proto-loader": "^0.8.1",
+    "express": "^5.2.1",
+    "pg": "^8.23.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.5.0",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0"
+  }
+}
