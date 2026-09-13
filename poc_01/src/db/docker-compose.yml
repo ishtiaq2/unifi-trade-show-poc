@@ -41,7 +41,7 @@ services:
     volumes:
       # Runs ONLY when the data directory is empty — i.e. on first
       # start, or after `docker compose down -v`. Editing init.sql and
-      # re-running `up` will NOT re-apply it. See README.md.
+      # re-running `up` will NOT re-apply it. See README_created_on_the_go.md.
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro,z
       - pgdata:/var/lib/postgresql/data
     healthcheck:

@@ -8,6 +8,7 @@ import {
   MonitoringService,
 } from "../service/monitoringService";
 import type { Logger } from "../logging/logger";
+import path from "path";
 
 const registerDeviceSchema = z.object({
   name: z.string().min(1),
@@ -17,6 +18,26 @@ const registerDeviceSchema = z.object({
 export function createApp(service: MonitoringService, log: Logger) {
   const app = express();
   app.use(express.json());
+
+  // Serve static UI assets from http/public/ directory
+  app.use(express.static(path.join(__dirname, "public")));
+
+  // --- VERBOSE HTTP LOGGER MUST GO FIRST ---
+  app.use((req, res, next) => {
+    const start = Date.now();
+    console.log(`\n[API IN]  ${req.method} ${req.url}`);
+    if (req.body && Object.keys(req.body).length) {
+      console.log(`[PAYLOAD]`, req.body);
+    }
+
+    res.on('finish', () => {
+      const ms = Date.now() - start;
+      console.log(`[API OUT] ${req.method} ${req.url} -> HTTP ${res.statusCode} (${ms}ms)`);
+    });
+    next();
+  });
+  // -----------------------------------------
+
 
   /** Liveness only — touches nothing, so it answers even if Postgres is down. */
   app.get("/healthz", (_req, res) => {
@@ -42,10 +63,18 @@ export function createApp(service: MonitoringService, log: Logger) {
   app.post("/devices", async (req, res, next) => {
     const parsed = registerDeviceSchema.safeParse(req.body);
     if (!parsed.success) {
+      const formattedIssues = parsed.error.issues.map(
+        (issue) => `${issue.path.join(".")}: ${issue.message}`
+      );
+
       res.status(400).json({
-        error: { code: "VALIDATION_ERROR", message: parsed.error.message },
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid device registration payload",
+          details: formattedIssues,
+        },
       });
-      return;
+      return
     }
     try {
       res.status(201).json(await service.registerDevice(parsed.data));

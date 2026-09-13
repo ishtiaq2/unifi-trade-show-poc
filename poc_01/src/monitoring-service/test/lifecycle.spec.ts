@@ -181,7 +181,7 @@ describe("service life cycle (real entrypoint, real process)", () => {
     await waitForHealthz(port);
 
     // Never ambiguous in a production log which implementation is
-    // running — see src/checksum/README.md.
+    // running — see src/checksum/README_created_on_the_go.md.
     expect(output()).toContain("checksum provider");
   }, 40_000);
 
