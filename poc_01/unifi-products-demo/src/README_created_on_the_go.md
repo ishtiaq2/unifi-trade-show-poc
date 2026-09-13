@@ -1,3 +1,7 @@
+## Development Environment
+1. **Virtualization:** Oracle VM VirtualBox
+2. **Operating System:** CentOS Stream 9
+
 # UniFi Device Monitoring Fleet – Proof of Concept
 
 This Proof of Concept (PoC) demonstrates a highly resilient, multi-protocol microservices architecture designed to discover, register, and monitor network hardware in real-time. It serves as both a development blueprint and an interactive trade show demonstration.
